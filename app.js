@@ -10,6 +10,7 @@ const firebaseConfig = {
 
 // Initialize Firebase (namespaced style)
 firebase.initializeApp(firebaseConfig);
+firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 const db = firebase.firestore();
 async function incrementReportCount(uid, email) {
   const userRef = db.collection("users").doc(uid);
@@ -57,14 +58,21 @@ loginForm.onsubmit = (e) => {
 
   auth.signInWithEmailAndPassword(email, password)
   .then((userCredential) => {
+    const user = userCredential.user;
+
+    // ✅ New log and alert
+    console.log("✅ Logged in:", user.email);
+    alert("Login successful!");
+
     status.textContent = "Login successful!";
     window.location.href = "caat.html";
   })
   .catch((error) => {
+    console.error("❌ Login failed:", error.message); // ✅ new
     status.textContent = "";
     alert("Login failed: " + error.message);
   });
-};
+
 
 // Handle Signup
 signupForm.onsubmit = (e) => {

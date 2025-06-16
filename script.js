@@ -2789,10 +2789,9 @@ async function generateNarrativeReport() {
 
     const result = await response.json();
     const newWin = window.open("", "_blank");
-
     newWin.document.write(`
-    <html>
-      <head>
+      <html>
+        <head>
         <title>Autism Diagnostic Intake Report (ADIR)</title>
         <style>
           body {

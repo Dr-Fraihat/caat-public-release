@@ -34,6 +34,10 @@ async function incrementReportCount(uid, email) {
 }
 
 const auth = firebase.auth();
+firebase.auth().onAuthStateChanged((user) => {
+  window.currentUser = user; // ✅ Make available globally across all scripts
+});
+
 
 // DOM Elements
 const loginForm = document.getElementById("loginForm");
@@ -52,13 +56,14 @@ loginForm.onsubmit = (e) => {
   const password = document.getElementById("password").value;
 
   auth.signInWithEmailAndPassword(email, password)
-    .then(() => {
-      status.textContent = "Login successful!";
-      window.location.href = "caat.html"; // 🔄 redirect to intake form
-    })
-    .catch((error) => {
-      alert(error.message);
-    });
+  .then((userCredential) => {
+    status.textContent = "Login successful!";
+    window.location.href = "caat.html";
+  })
+  .catch((error) => {
+    status.textContent = "";
+    alert("Login failed: " + error.message);
+  });
 };
 
 // Handle Signup

@@ -2738,249 +2738,187 @@ function evaluateDSM5(data) {
 
 async function generateNarrativeReport() {
   showLoading();
-firebase.auth().onAuthStateChanged(async (user) => {
-  if (!user) {
-    alert("You must be logged in to generate an AI report.");
-    hideLoading();
-    return;
-  }
 
-  try {
-    await incrementReportCount(user.uid, user.email);
-  } catch (err) {
-    alert(err.message);
-    hideLoading();
-    return;
-  }
-
-  const data = window.generatedReportData;
-  if (!data) {
-    alert("Please generate the full intake report first.");
-    hideLoading();
-    return;
-  }
-
-  const selectedLangs = Array.from(document.querySelectorAll('input[name="reportLanguages"]:checked'))
-    .map(cb => cb.value);
-
-  if (selectedLangs.length === 0) {
-    alert("Please select at least one language for the AI report.");
-    hideLoading();
-    return;
-  }
-
-  try {
-    const response = await fetch("https://caat-backend.onrender.com/generate-report", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ data, languages: selectedLangs })
-    });
-
-    if (!response.ok) {
-      alert("Failed to generate narrative report.");
+  firebase.auth().onAuthStateChanged(async (user) => {
+    if (!user) {
+      alert("You must be logged in to generate an AI report.");
       hideLoading();
       return;
     }
 
-    const result = await response.json();
-    const newWin = window.open("", "_blank");
+    try {
+      await incrementReportCount(user.uid, user.email);
+    } catch (err) {
+      alert(err.message);
+      hideLoading();
+      return;
+    }
 
-    newWin.document.write(/* your HTML rendering block here using result.report */);
-    newWin.document.close();
-  } catch (error) {
-    alert("An error occurred while generating the report.");
-    console.error(error);
-  } finally {
-    hideLoading();
-  }
-});
+    const data = window.generatedReportData;
+    if (!data) {
+      alert("Please generate the full intake report first.");
+      hideLoading();
+      return;
+    }
 
-try {
-  await incrementReportCount(user.uid, user.email);
-} catch (err) {
-  alert(err.message);
-  hideLoading();
-  return;
-}
+    const selectedLangs = Array.from(document.querySelectorAll('input[name="reportLanguages"]:checked'))
+      .map(cb => cb.value);
 
-  const data = window.generatedReportData;
-  if (!data) {
-    alert("Please generate the full intake report first.");
-    return;
-  }
+    if (selectedLangs.length === 0) {
+      alert("Please select at least one language for the AI report.");
+      hideLoading();
+      return;
+    }
 
-  const selectedLangs = Array.from(document.querySelectorAll('input[name="reportLanguages"]:checked'))
-  .map(cb => cb.value);
+    try {
+      const response = await fetch("https://caat-backend.onrender.com/generate-report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data, languages: selectedLangs })
+      });
 
-if (selectedLangs.length === 0) {
-  alert("Please select at least one language for the AI report.");
-  return;
-}
-try {
-  const response = await fetch("https://caat-backend.onrender.com/generate-report", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ data, languages: selectedLangs })
+      if (!response.ok) {
+        alert("Failed to generate narrative report.");
+        hideLoading();
+        return;
+      }
+
+      const result = await response.json();
+      const newWin = window.open("", "_blank");
+
+      newWin.document.write(`
+      <html>
+        <head>
+          <title>Autism Diagnostic Intake Report (ADIR)</title>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              margin: 0;
+              padding: 0;
+            }
+            @page {
+              margin: 2.5cm 2cm;
+            }
+            .cover-page {
+              height: 100vh;
+              display: flex;
+              flex-direction: column;
+              justify-content: center;
+              align-items: center;
+              text-align: center;
+              page-break-after: always;
+            }
+            .cover-logo {
+              text-align: center;
+              margin-bottom: 40px;
+            }
+            .cover-logo img {
+              height: 80px;
+            }
+            .cover-logo h2 {
+              font-size: 16px;
+              color: #1a3e80;
+              font-weight: bold;
+              margin: 10px 0 0;
+            }
+            .cover-logo h3 {
+              font-size: 14px;
+              color: #1a3e80;
+              font-weight: normal;
+            }
+            .cover-title {
+              font-size: 36px;
+              font-weight: bold;
+              color: red;
+              margin-bottom: 10px;
+            }
+            .cover-subtitle {
+              font-size: 20px;
+              color: red;
+            }
+            .info-page {
+              page-break-after: always;
+              padding: 3cm 2cm;
+            }
+            .info-page h2 {
+              text-align: center;
+              color: #1a3e80;
+              margin-bottom: 20px;
+            }
+            .info-page p {
+              font-size: 14px;
+              line-height: 1.6;
+            }
+            .footer {
+              text-align: center;
+              font-size: 12px;
+              color: #1a3e80;
+              margin-top: 40px;
+              border-top: 1px solid #ccc;
+              padding-top: 10px;
+            }
+            .narrative-body {
+              padding: 3cm 2cm;
+              font-size: 14px;
+              page-break-before: always;
+            }
+            .narrative-body p {
+              margin: 0 0 1em 0;
+              line-height: 1.6;
+            }
+          </style>
+        </head>
+        <body>
+          <!-- COVER PAGE -->
+          <div class="cover-page">
+            <div class="cover-logo">
+              <img src="https://i.postimg.cc/TPNDd6ZD/aac-logo.png" alt="AAC Logo">
+              <h2>AMERICAN AUTISM COUNCIL FOR ACCREDITATION AND CONTINUING EDUCATION</h2>
+              <h3>Comprehensive Autism Assessment Tool (CAAT)</h3>
+            </div>
+            <div class="cover-title">Autism Diagnostic Intake Report (ADIR)</div>
+            <div class="cover-subtitle">Private and Confidential</div>
+            <div class="footer">
+              2870 E Oakland Park Blvd Fort Lauderdale, FL 33306 *** info@americanautismcouncil.org *** www.americanautismcouncil.org
+            </div>
+          </div>
+
+          <!-- CLIENT INFORMATION PAGE -->
+          <div class="info-page">
+            <h2>Confidentiality Notice</h2>
+            <p style="text-align: justify; max-width: 700px; margin: auto;">
+              The contents of this report are of a confidential and sensitive nature and should not be duplicated without the consent of the parents. The data contained herein is valid for a limited period and due to the changing and developing nature of children, the information and recommendations are meant for current use. Reference to or use of this report in future years should be made with caution.
+            </p>
+
+            <h2 style="margin-top: 40px;">Client Information</h2>
+            <hr/>
+            <p><strong>Name:</strong> ${data.clientInfo.fullName}</p>
+            <p><strong>Date of Birth:</strong> ${data.clientInfo.dob}</p>
+            <p><strong>Intake Date:</strong> ${data.clientInfo.intakeDate}</p>
+            <p><strong>Age at Assessment:</strong> ${data.clientInfo.age}</p>
+            <p><strong>Gender:</strong> ${data.clientInfo.gender}</p>
+            <p><strong>Reported By:</strong> ${data.clientInfo.caseManager}</p>
+            <p><strong>Date of Report:</strong> ${data.clientInfo.reportDate}</p>
+
+            <div class="footer">
+              2870 E Oakland Park Blvd Fort Lauderdale, FL 33306 *** info@americanautismcouncil.org *** www.americanautismcouncil.org
+            </div>
+          </div>
+
+          <!-- MAIN NARRATIVE REPORT -->
+          <div class="narrative-body">
+            ${result.report.replace(/\n/g, "<p>$&</p>")} ${evaluateDSM5(data)}
+          </div>
+        </body>
+      </html>
+      `);
+      newWin.document.close();
+    } catch (error) {
+      alert("An error occurred while generating the report.");
+      console.error(error);
+    } finally {
+      hideLoading();
+    }
   });
-
-  if (!response.ok) {
-    alert("Failed to generate narrative report.");
-    return;
-  }
-
-  const result = await response.json();
-  const newWin = window.open("", "_blank");
-
-  newWin.document.write(`
-  <html>
-    <head>
-      <title>Autism Diagnostic Intake Report (ADIR)</title>
-      <style>
-        body {
-          font-family: Arial, sans-serif;
-          margin: 0;
-          padding: 0;
-        }
-
-        @page {
-          margin: 2.5cm 2cm;
-        }
-
-        .cover-page {
-          height: 100vh;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
-          text-align: center;
-          page-break-after: always;
-        }
-
-        .cover-logo {
-          text-align: center;
-          margin-bottom: 40px;
-        }
-
-        .cover-logo img {
-          height: 80px;
-        }
-
-        .cover-logo h2 {
-          font-size: 16px;
-          color: #1a3e80;
-          font-weight: bold;
-          margin: 10px 0 0;
-        }
-
-        .cover-logo h3 {
-          font-size: 14px;
-          color: #1a3e80;
-          font-weight: normal;
-        }
-
-        .cover-title {
-          font-size: 36px;
-          font-weight: bold;
-          color: red;
-          margin-bottom: 10px;
-        }
-
-        .cover-subtitle {
-          font-size: 20px;
-          color: red;
-        }
-
-        .info-page {
-          page-break-after: always;
-          padding: 3cm 2cm;
-        }
-
-        .info-page h2 {
-          text-align: center;
-          color: #1a3e80;
-          margin-bottom: 20px;
-        }
-
-        .info-page p {
-          font-size: 14px;
-          line-height: 1.6;
-        }
-
-        .footer {
-          text-align: center;
-          font-size: 12px;
-          color: #1a3e80;
-          margin-top: 40px;
-          border-top: 1px solid #ccc;
-          padding-top: 10px;
-        }
-
-        .narrative-body {
-          padding: 3cm 2cm;
-          font-size: 14px;
-          page-break-before: always;
-        }
-
-        .narrative-body p {
-          margin: 0 0 1em 0;
-          line-height: 1.6;
-        }
-      </style>
-    </head>
-    <body>
-      <!-- COVER PAGE -->
-      <div class="cover-page">
-  <div class="cover-logo">
-    <img src="https://i.postimg.cc/TPNDd6ZD/aac-logo.png" alt="AAC Logo">
-    <h2>AMERICAN AUTISM COUNCIL FOR ACCREDITATION AND CONTINUING EDUCATION</h2>
-    <h3>Comprehensive Autism Assessment Tool (CAAT)</h3>
-  </div>
-  <div class="cover-title">Autism Diagnostic Intake Report (ADIR)</div>
-  <div class="cover-subtitle">Private and Confidential</div>
-
-  <!-- ✅ Add this block here -->
-  <div class="footer">
-    2870 E Oakland Park Blvd Fort Lauderdale, FL 33306 *** info@americanautismcouncil.org *** www.americanautismcouncil.org
-  </div>
-</div>
-
-      <!-- CLIENT INFORMATION PAGE -->
-      <div class="info-page">
-        <h2>Confidentiality Notice</h2>
-        <p style="text-align: justify; max-width: 700px; margin: auto;">
-          The contents of this report are of a confidential and sensitive nature and should not be duplicated without the consent of the parents. The data contained herein is valid for a limited period and due to the changing and developing nature of children, the information and recommendations are meant for current use. Reference to or use of this report in future years should be made with caution.
-        </p>
-
-        <h2 style="margin-top: 40px;">Client Information</h2>
-        <hr/>
-        <p><strong>Name:</strong> ${data.clientInfo.fullName}</p>
-        <p><strong>Date of Birth:</strong> ${data.clientInfo.dob}</p>
-        <p><strong>Intake Date:</strong> ${data.clientInfo.intakeDate}</p>
-        <p><strong>Age at Assessment:</strong> ${data.clientInfo.age}</p>
-        <p><strong>Gender:</strong> ${data.clientInfo.gender}</p>
-        <p><strong>Reported By:</strong> ${data.clientInfo.caseManager}</p>
-        <p><strong>Date of Report:</strong> ${data.clientInfo.reportDate}</p>
-
-        <div class="footer">
-          2870 E Oakland Park Blvd Fort Lauderdale, FL 33306 *** info@americanautismcouncil.org *** www.americanautismcouncil.org
-        </div>
-      </div>
-
-      <!-- MAIN NARRATIVE REPORT -->
-      <div class="narrative-body">
-        ${result.report.replace(/\n/g, "<p>$&</p>")} ${evaluateDSM5(data)}
-      </div>
-    </body>
-  </html>
-  `);
-
-  newWin.document.close();
-} catch (error) {
-  alert("An error occurred while generating the report.");
-  console.error(error);
-} finally {
-  hideLoading(); // ✅ Spinner always hides
 }
-}
-
 

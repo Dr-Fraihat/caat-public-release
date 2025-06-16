@@ -10,6 +10,11 @@ const firebaseConfig = {
 
 // ✅ Initialize Firebase
 firebase.initializeApp(firebaseConfig);
+
+// ✅ Confirm this script loaded (you will see it in DevTools console)
+console.log("✅ script.js loaded");
+
+// ✅ Track login
 let currentUser = null;
 firebase.auth().onAuthStateChanged((user) => {
   currentUser = user;

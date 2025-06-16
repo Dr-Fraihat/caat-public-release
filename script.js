@@ -1,3 +1,16 @@
+// ✅ Firebase Configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyDHs0w6x1nBJ0TSydIgB8hH3CjjJHTKVow",
+  authDomain: "caat-tool.firebaseapp.com",
+  projectId: "caat-tool",
+  storageBucket: "caat-tool.appspot.com",
+  messagingSenderId: "877587046757",
+  appId: "1:877587046757:web:e825ad4f018cc8315a418c"
+};
+
+// ✅ Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+
 // ========== script.js ==========
 
 // Helper functions

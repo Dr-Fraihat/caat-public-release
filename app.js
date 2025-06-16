@@ -72,6 +72,7 @@ loginForm.onsubmit = (e) => {
     status.textContent = "";
     alert("Login failed: " + error.message);
   });
+};
 
 
 // Handle Signup

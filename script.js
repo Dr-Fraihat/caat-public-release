@@ -2738,12 +2738,62 @@ function evaluateDSM5(data) {
 
 async function generateNarrativeReport() {
   showLoading();
-const user = firebase.auth().currentUser;
-if (!user) {
-  alert("You must be logged in to generate an AI report.");
-  hideLoading();
-  return;
-}
+firebase.auth().onAuthStateChanged(async (user) => {
+  if (!user) {
+    alert("You must be logged in to generate an AI report.");
+    hideLoading();
+    return;
+  }
+
+  try {
+    await incrementReportCount(user.uid, user.email);
+  } catch (err) {
+    alert(err.message);
+    hideLoading();
+    return;
+  }
+
+  const data = window.generatedReportData;
+  if (!data) {
+    alert("Please generate the full intake report first.");
+    hideLoading();
+    return;
+  }
+
+  const selectedLangs = Array.from(document.querySelectorAll('input[name="reportLanguages"]:checked'))
+    .map(cb => cb.value);
+
+  if (selectedLangs.length === 0) {
+    alert("Please select at least one language for the AI report.");
+    hideLoading();
+    return;
+  }
+
+  try {
+    const response = await fetch("https://caat-backend.onrender.com/generate-report", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ data, languages: selectedLangs })
+    });
+
+    if (!response.ok) {
+      alert("Failed to generate narrative report.");
+      hideLoading();
+      return;
+    }
+
+    const result = await response.json();
+    const newWin = window.open("", "_blank");
+
+    newWin.document.write(/* your HTML rendering block here using result.report */);
+    newWin.document.close();
+  } catch (error) {
+    alert("An error occurred while generating the report.");
+    console.error(error);
+  } finally {
+    hideLoading();
+  }
+});
 
 try {
   await incrementReportCount(user.uid, user.email);

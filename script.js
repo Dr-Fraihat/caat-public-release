@@ -14,11 +14,6 @@ firebase.initializeApp(firebaseConfig);
 // ✅ Confirm this script loaded (you will see it in DevTools console)
 console.log("✅ script.js loaded");
 
-// ✅ Track login
-let currentUser = null;
-firebase.auth().onAuthStateChanged((user) => {
-  currentUser = user;
-});
 
 
 // ========== script.js ==========
@@ -2749,14 +2744,14 @@ function evaluateDSM5(data) {
 async function generateNarrativeReport() {
   showLoading();
 
-  if (!currentUser) {
+  if (!window.currentUser) {
     alert("You must be logged in to generate an AI report.");
     hideLoading();
     return;
   }
 
   try {
-    await incrementReportCount(currentUser.uid, currentUser.email);
+    await incrementReportCount(window.currentUser.uid, window.currentUser.email);
   } catch (err) {
     alert(err.message);
     hideLoading();
@@ -2875,50 +2870,50 @@ async function generateNarrativeReport() {
             line-height: 1.6;
           }
         </style>
-      </head>
-      <body>
-        <!-- COVER PAGE -->
-        <div class="cover-page">
-          <div class="cover-logo">
-            <img src="https://i.postimg.cc/TPNDd6ZD/aac-logo.png" alt="AAC Logo">
-            <h2>AMERICAN AUTISM COUNCIL FOR ACCREDITATION AND CONTINUING EDUCATION</h2>
-            <h3>Comprehensive Autism Assessment Tool (CAAT)</h3>
+        </head>
+        <body>
+          <!-- COVER PAGE -->
+          <div class="cover-page">
+            <div class="cover-logo">
+              <img src="https://i.postimg.cc/TPNDd6ZD/aac-logo.png" alt="AAC Logo">
+              <h2>AMERICAN AUTISM COUNCIL FOR ACCREDITATION AND CONTINUING EDUCATION</h2>
+              <h3>Comprehensive Autism Assessment Tool (CAAT)</h3>
+            </div>
+            <div class="cover-title">Autism Diagnostic Intake Report (ADIR)</div>
+            <div class="cover-subtitle">Private and Confidential</div>
+            <div class="footer">
+              2870 E Oakland Park Blvd Fort Lauderdale, FL 33306 *** info@americanautismcouncil.org *** www.americanautismcouncil.org
+            </div>
           </div>
-          <div class="cover-title">Autism Diagnostic Intake Report (ADIR)</div>
-          <div class="cover-subtitle">Private and Confidential</div>
-          <div class="footer">
-            2870 E Oakland Park Blvd Fort Lauderdale, FL 33306 *** info@americanautismcouncil.org *** www.americanautismcouncil.org
+
+          <!-- CLIENT INFORMATION PAGE -->
+          <div class="info-page">
+            <h2>Confidentiality Notice</h2>
+            <p style="text-align: justify; max-width: 700px; margin: auto;">
+              The contents of this report are of a confidential and sensitive nature and should not be duplicated without the consent of the parents. The data contained herein is valid for a limited period and due to the changing and developing nature of children, the information and recommendations are meant for current use. Reference to or use of this report in future years should be made with caution.
+            </p>
+
+            <h2 style="margin-top: 40px;">Client Information</h2>
+            <hr/>
+            <p><strong>Name:</strong> ${data.clientInfo.fullName}</p>
+            <p><strong>Date of Birth:</strong> ${data.clientInfo.dob}</p>
+            <p><strong>Intake Date:</strong> ${data.clientInfo.intakeDate}</p>
+            <p><strong>Age at Assessment:</strong> ${data.clientInfo.age}</p>
+            <p><strong>Gender:</strong> ${data.clientInfo.gender}</p>
+            <p><strong>Reported By:</strong> ${data.clientInfo.caseManager}</p>
+            <p><strong>Date of Report:</strong> ${data.clientInfo.reportDate}</p>
+
+            <div class="footer">
+              2870 E Oakland Park Blvd Fort Lauderdale, FL 33306 *** info@americanautismcouncil.org *** www.americanautismcouncil.org
+            </div>
           </div>
-        </div>
 
-        <!-- CLIENT INFORMATION PAGE -->
-        <div class="info-page">
-          <h2>Confidentiality Notice</h2>
-          <p style="text-align: justify; max-width: 700px; margin: auto;">
-            The contents of this report are of a confidential and sensitive nature and should not be duplicated without the consent of the parents. The data contained herein is valid for a limited period and due to the changing and developing nature of children, the information and recommendations are meant for current use. Reference to or use of this report in future years should be made with caution.
-          </p>
-
-          <h2 style="margin-top: 40px;">Client Information</h2>
-          <hr/>
-          <p><strong>Name:</strong> ${data.clientInfo.fullName}</p>
-          <p><strong>Date of Birth:</strong> ${data.clientInfo.dob}</p>
-          <p><strong>Intake Date:</strong> ${data.clientInfo.intakeDate}</p>
-          <p><strong>Age at Assessment:</strong> ${data.clientInfo.age}</p>
-          <p><strong>Gender:</strong> ${data.clientInfo.gender}</p>
-          <p><strong>Reported By:</strong> ${data.clientInfo.caseManager}</p>
-          <p><strong>Date of Report:</strong> ${data.clientInfo.reportDate}</p>
-
-          <div class="footer">
-            2870 E Oakland Park Blvd Fort Lauderdale, FL 33306 *** info@americanautismcouncil.org *** www.americanautismcouncil.org
+          <!-- MAIN NARRATIVE REPORT -->
+          <div class="narrative-body">
+            ${result.report.replace(/\n/g, "<p>$&</p>")} ${evaluateDSM5(data)}
           </div>
-        </div>
-
-        <!-- MAIN NARRATIVE REPORT -->
-        <div class="narrative-body">
-          ${result.report.replace(/\n/g, "<p>$&</p>")} ${evaluateDSM5(data)}
-        </div>
-      </body>
-    </html>
+        </body>
+      </html>
     `);
     newWin.document.close();
   } catch (err) {

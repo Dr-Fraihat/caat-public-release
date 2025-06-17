@@ -1,9 +1,9 @@
 // ✅ Firebase Configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyDHs0w6x1nBJ0TSydIgB8hH3CjjJHTKVow",
+  apiKey: "AIzaSyDHs0w6x1nBJ0TSydIgb8Hh3CjjJHTKVow",
   authDomain: "caat-tool.firebaseapp.com",
   projectId: "caat-tool",
-  storageBucket: "caat-tool.appspot.com",
+  storageBucket: "caat-tool.firebasestorage.app",
   messagingSenderId: "877587046757",
   appId: "1:877587046757:web:e825ad4f018cc8315a418c"
 };
@@ -11,7 +11,7 @@ const firebaseConfig = {
 // ✅ Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 
-// ✅ Confirm this script loaded (you will see it in DevTools console)
+// ✅ Confirm this script loaded (DevTools)
 console.log("✅ script.js loaded");
 
 

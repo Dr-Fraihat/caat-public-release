@@ -1507,7 +1507,7 @@ if (langLabel) langLabel.textContent = translations[lang].selectLanguage;
 // ✅ Translate form labels
  document.querySelectorAll("[data-translate]").forEach((el) => {
   const key = el.getAttribute("data-translate");
-  console.log("Translating:", key, "→", translations[currentLanguage][key]); // 👈 add this
+
   if (translations[currentLanguage][key]) {
     el.textContent = translations[currentLanguage][key];
   }

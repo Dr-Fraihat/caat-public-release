@@ -1,7 +1,87 @@
-// ✅ Replace this with your Firebase config
+// ✅ Firebase Configuration and Initialization
+var firebaseConfig = {
+  apiKey: "AIzaSyDHs0w6x1nBJ0TSydIgb8Hh3CjjJHTKVow",
+  authDomain: "caat-tool.firebaseapp.com",
+  projectId: "caat-tool",
+  storageBucket: "caat-tool.firebasestorage.app",
+  messagingSenderId: "877587046757",
+  appId: "1:877587046757:web:e825ad4f018cc8315a418c"
+};
 
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
 firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-const db = firebase.firestore();
+
+if (typeof db === "undefined") {
+  var db = firebase.firestore();
+}
+if (typeof auth === "undefined") {
+  var auth = firebase.auth();
+}
+
+// ✅ Track user globally
+firebase.auth().onAuthStateChanged((user) => {
+  window.currentUser = user;
+});
+
+// ✅ Handle DOM-dependent code
+document.addEventListener("DOMContentLoaded", () => {
+  const loginForm = document.getElementById("loginForm");
+  const signupForm = document.getElementById("signupForm");
+  const status = document.getElementById("status");
+
+  const toggleToSignup = document.getElementById("toggleToSignup");
+  if (toggleToSignup) {
+    toggleToSignup.onclick = () => {
+      if (loginForm) loginForm.style.display = "none";
+      if (signupForm) signupForm.style.display = "block";
+    };
+  }
+
+  if (loginForm) {
+    loginForm.onsubmit = (e) => {
+      e.preventDefault();
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      auth.signInWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+          const user = userCredential.user;
+          window.currentUser = user;
+          console.log("✅ Logged in:", user.email);
+          if (status) status.textContent = "Login successful!";
+          alert("Login successful!");
+          window.location.href = "caat.html";
+        })
+        .catch((error) => {
+          console.error("❌ Login failed:", error.message);
+          if (status) status.textContent = "";
+          alert("Login failed: " + error.message);
+        });
+    };
+  }
+
+  if (signupForm) {
+    signupForm.onsubmit = (e) => {
+      e.preventDefault();
+      const email = document.getElementById("signupEmail").value;
+      const password = document.getElementById("signupPassword").value;
+
+      auth.createUserWithEmailAndPassword(email, password)
+        .then(() => {
+          if (status) status.textContent = "Signup successful!";
+          alert("Signup successful!");
+          window.location.href = "caat.html";
+        })
+        .catch((error) => {
+          alert(error.message);
+        });
+    };
+  }
+});
+
+// ✅ Usage counter
 async function incrementReportCount(uid, email) {
   const userRef = db.collection("users").doc(uid);
   const userDoc = await userRef.get();
@@ -15,7 +95,6 @@ async function incrementReportCount(uid, email) {
   const used = data.reportsUsed || 0;
   const subscription = data.subscription || "trial";
 
-  // ✅ Limit to 1 free report
   if (subscription === "trial" && used >= 1) {
     throw new Error("Free trial limit reached. Please subscribe to continue.");
   }
@@ -23,60 +102,3 @@ async function incrementReportCount(uid, email) {
   await userRef.update({ reportsUsed: used + 1 });
   return used + 1;
 }
-
-const auth = firebase.auth();
-firebase.auth().onAuthStateChanged((user) => {
-  window.currentUser = user; // ✅ Make available globally across all scripts
-});
-
-
-// DOM Elements
-const loginForm = document.getElementById("loginForm");
-const signupForm = document.getElementById("signupForm");
-const status = document.getElementById("status");
-
-document.getElementById("toggleToSignup").onclick = () => {
-  loginForm.style.display = "none";
-  signupForm.style.display = "block";
-};
-
-// Handle Login
-loginForm.onsubmit = (e) => {
-  e.preventDefault();
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-
-  auth.signInWithEmailAndPassword(email, password)
-  .then((userCredential) => {
-    const user = userCredential.user;
-
-    // ✅ New log and alert
-    console.log("✅ Logged in:", user.email);
-    alert("Login successful!");
-
-    status.textContent = "Login successful!";
-    window.location.href = "caat.html";
-  })
-  .catch((error) => {
-    console.error("❌ Login failed:", error.message); // ✅ new
-    status.textContent = "";
-    alert("Login failed: " + error.message);
-  });
-};
-
-
-// Handle Signup
-signupForm.onsubmit = (e) => {
-  e.preventDefault();
-  const email = document.getElementById("signupEmail").value;
-  const password = document.getElementById("signupPassword").value;
-
-  auth.createUserWithEmailAndPassword(email, password)
-    .then(() => {
-      status.textContent = "Signup successful!";
-      window.location.href = "caat.html";
-    })
-    .catch((error) => {
-      alert(error.message);
-    });
-};

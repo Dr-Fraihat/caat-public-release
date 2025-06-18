@@ -1,20 +1,3 @@
-// ✅ Firebase Configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyDHs0w6x1nBJ0TSydIgb8Hh3CjjJHTKVow",
-  authDomain: "caat-tool.firebaseapp.com",
-  projectId: "caat-tool",
-  storageBucket: "caat-tool.firebasestorage.app",
-  messagingSenderId: "877587046757",
-  appId: "1:877587046757:web:e825ad4f018cc8315a418c"
-};
-
-// ✅ Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-
-// ✅ Confirm this script loaded (DevTools)
-console.log("✅ script.js loaded");
-
-
 
 // ========== script.js ==========
 
@@ -174,9 +157,13 @@ document.addEventListener("change", function (event) {
 });
 
 
-let currentLanguage = "en";
+if (typeof currentLanguage === "undefined") {
+  var currentLanguage = "en";
+}
 
-const translations = {
+
+if (typeof translations === "undefined") {
+  var translations = {
   en: {
     intakeTab: "Autism Diagnostic Intake Report (ADIR)",
     signSubmit: "Sign, Submit, And Generate Autism Diagnostic Intake Report (ADIR)",
@@ -1497,7 +1484,8 @@ generateListReport: "إنشاء قائمة تقرير التقييم التشخ�
 csectionReasonLabel: "سبب العملية القيصرية"
 
   }
-};
+ };
+}
 function switchLanguage(lang) {
   currentLanguage = lang;
   document.body.dir = lang === "ar" ? "rtl" : "ltr";

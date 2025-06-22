@@ -1,8 +1,8 @@
 
 
 
-// ✅ Firebase Configuration
-const firebaseConfig = {
+// ✅ Firebase Configuration and Initialization
+var firebaseConfig = {
   apiKey: "AIzaSyDHs0w6x1nBJ0TSydIgb8Hh3CjjJHTKVow",
   authDomain: "caat-tool.firebaseapp.com",
   projectId: "caat-tool",
@@ -11,9 +11,16 @@ const firebaseConfig = {
   appId: "1:877587046757:web:e825ad4f018cc8315a418c"
 };
 
-// ✅ Initialize Firebase
-firebase.initializeApp(firebaseConfig);
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
+
+firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
+// ✅ Declare Firestore and Auth only once
 const db = firebase.firestore();
+const auth = firebase.auth();
+
 
 // ✅ Confirm this script loaded (DevTools)
 console.log("✅ script.js loaded");

@@ -2971,3 +2971,4 @@ async function generateNarrativeReport() {
     hideLoading();
   }
 }}
+window.generateNarrativeReport = generateNarrativeReport;

@@ -1,4 +1,46 @@
 
+
+
+// ✅ Firebase Configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyDHs0w6x1nBJ0TSydIgb8Hh3CjjJHTKVow",
+  authDomain: "caat-tool.firebaseapp.com",
+  projectId: "caat-tool",
+  storageBucket: "caat-tool.firebasestorage.app",
+  messagingSenderId: "877587046757",
+  appId: "1:877587046757:web:e825ad4f018cc8315a418c"
+};
+
+// ✅ Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// ✅ Confirm this script loaded (DevTools)
+console.log("✅ script.js loaded");
+
+// ✅ Add AI usage count limiter
+async function incrementReportCount(uid, email) {
+  if (!uid || !email) throw new Error("User ID or email missing.");
+
+  const userRef = db.collection("users").doc(uid);
+  const userDoc = await userRef.get();
+
+  if (!userDoc.exists) {
+    await userRef.set({ email, reportsUsed: 1, subscription: "trial" });
+    return 1;
+  }
+
+  const data = userDoc.data();
+  const used = data.reportsUsed || 0;
+  const subscription = data.subscription || "trial";
+
+  if (subscription === "trial" && used >= 1) {
+    throw new Error("Free trial limit reached. Please subscribe to continue.");
+  }
+
+  await userRef.update({ reportsUsed: used + 1 });
+  return used + 1;
+}
 // ========== script.js ==========
 
 // Helper functions
@@ -6,6 +48,7 @@ function getValue(id) {
   const el = document.getElementById(id);
   return el ? el.value.trim() : "";
 }
+
 
 function getRadioValue(name) {
   const el = document.querySelector(`input[name="${name}"]:checked`);
@@ -1507,7 +1550,7 @@ if (langLabel) langLabel.textContent = translations[lang].selectLanguage;
 // ✅ Translate form labels
  document.querySelectorAll("[data-translate]").forEach((el) => {
   const key = el.getAttribute("data-translate");
-
+  console.log("Translating:", key, "→", translations[currentLanguage][key]); // 👈 add this
   if (translations[currentLanguage][key]) {
     el.textContent = translations[currentLanguage][key];
   }
@@ -1529,6 +1572,7 @@ if (langLabel) langLabel.textContent = translations[lang].selectLanguage;
 // ========== Step 1: Intake Report Generation ==========
 
 function generateFullIntakeReport() {
+  try {
   const container = document.getElementById("intakeReportContainer");
 if (!container) {
   alert("Report container not found!");
@@ -2667,7 +2711,13 @@ const opt = {
   html2canvas:  { scale: 2 },
   jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
 };
+} catch (err) {
+  alert("An error occurred while generating the report.");
+  console.error(err);
+} finally {
+  hideLoading();
 }
+
 function evaluateDSM5(data) {
   const name = data.clientInfo.fullName.split(" ")[0].toUpperCase();
 
@@ -2732,16 +2782,19 @@ function evaluateDSM5(data) {
 async function generateNarrativeReport() {
   showLoading();
 
-  if (!window.currentUser) {
-    alert("You must be logged in to generate an AI report.");
+  console.log("🧠 currentUser:", window.currentUser);
+
+  if (!window.currentUser || !window.currentUser.uid) {
+    alert("❌ You must be logged in to generate an AI report.");
     hideLoading();
+    
     return;
   }
 
   try {
     await incrementReportCount(window.currentUser.uid, window.currentUser.email);
   } catch (err) {
-    alert(err.message);
+    alert("⚠️ " + err.message);
     hideLoading();
     return;
   }
@@ -2910,4 +2963,4 @@ async function generateNarrativeReport() {
   } finally {
     hideLoading();
   }
-}
+}}

@@ -102,3 +102,8 @@ async function incrementReportCount(uid, email) {
   await userRef.update({ reportsUsed: used + 1 });
   return used + 1;
 }
+document.addEventListener("DOMContentLoaded", () => {
+  if (typeof generateNarrativeReport !== "undefined") {
+    window.generateNarrativeReport = generateNarrativeReport;
+  }
+});

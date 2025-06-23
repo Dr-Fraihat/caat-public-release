@@ -2989,7 +2989,8 @@ async function generateNarrativeReport() {
   } finally {
     hideLoading();
   }
-}}
+}
+}
 console.log("✅ Binding generateNarrativeReport to window");
 window.generateNarrativeReport = generateNarrativeReport;
 

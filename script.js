@@ -2717,15 +2717,15 @@ doc += `
 // ✅ Safely send request to parent using postMessage
 setTimeout(() => {
   const aiBtn = document.getElementById("generateNarrativeInNewWindow");
-  if (aiBtn && window.opener) {
+  if (aiBtn && window.opener && typeof window.opener.generateNarrativeReport === "function") {
     aiBtn.addEventListener("click", () => {
-      console.log("📤 Sending AI report trigger to parent via postMessage");
-      window.opener.postMessage("run-ai-report", "*");
+      window.opener.generateNarrativeReport();
     });
   } else {
-    console.warn("❌ AI button or opener window not found");
+    console.warn("AI button or window.opener.generateNarrativeReport not available");
   }
-}, 0);
+}, 100); // Slight delay ensures everything is rendered
+
 
 container.style.display = "block";
 

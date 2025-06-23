@@ -2971,6 +2971,5 @@ async function generateNarrativeReport() {
     hideLoading();
   }
 }}
-window.addEventListener("DOMContentLoaded", () => {
-  window.generateNarrativeReport = generateNarrativeReport;
-});
+window.generateNarrativeReport = generateNarrativeReport;
+

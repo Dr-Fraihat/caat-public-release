@@ -13,12 +13,9 @@ if (!firebase.apps.length) {
 }
 firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
-if (typeof db === "undefined") {
-  var db = firebase.firestore();
-}
-if (typeof auth === "undefined") {
-  var auth = firebase.auth();
-}
+window.db = window.db || firebase.firestore();
+window.auth = window.auth || firebase.auth();
+
 
 // ✅ Track user globally
 firebase.auth().onAuthStateChanged((user) => {

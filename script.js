@@ -2714,16 +2714,19 @@ doc += `
 
  container.innerHTML = doc;
  // Reattach event listener from inside the new window
+// ✅ Safely send request to parent using postMessage
 setTimeout(() => {
   const aiBtn = document.getElementById("generateNarrativeInNewWindow");
-  if (aiBtn && window.opener && typeof window.opener.generateNarrativeReport === "function") {
+  if (aiBtn && window.opener) {
     aiBtn.addEventListener("click", () => {
-      window.opener.generateNarrativeReport();
+      console.log("📤 Sending AI report trigger to parent via postMessage");
+      window.opener.postMessage("run-ai-report", "*");
     });
   } else {
-    console.warn("AI button or opener.generateNarrativeReport not available");
+    console.warn("❌ AI button or opener window not found");
   }
 }, 0);
+
 container.style.display = "block";
 
 

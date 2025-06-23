@@ -2690,9 +2690,6 @@ doc += `
   </div>
 </div>
 
-<div style="text-align:center; margin-top:40px;">
-  <button id="generateNarrativeBtn">AI Generated Diagnostic Report</button>
-</div>
 `;
 if (therapyHistory.length > 0) {
   doc += `<div class="section"><h2>Therapy History</h2>`;
@@ -2721,6 +2718,18 @@ doc += `
 
  container.innerHTML = doc;
 container.style.display = "block";
+// Reattach event listener from inside the new window
+setTimeout(() => {
+  const aiBtn = document.getElementById("generateNarrativeInNewWindow");
+  if (aiBtn && window.opener && typeof window.opener.generateNarrativeReport === "function") {
+    aiBtn.addEventListener("click", () => {
+      window.opener.generateNarrativeReport();
+    });
+  } else {
+    console.warn("AI button or opener.generateNarrativeReport not available");
+  }
+}, 0);
+
 const opt = {
   margin:       0.5,
   filename:     'Autism_Diagnostic_Intake_Report_ADIR.pdf',
@@ -2982,12 +2991,7 @@ async function generateNarrativeReport() {
   }
 }}
 window.generateNarrativeReport = generateNarrativeReport;
-document.addEventListener("DOMContentLoaded", () => {
-  const btn = document.getElementById("generateNarrativeBtn");
-  if (btn) {
-    btn.addEventListener("click", generateNarrativeReport);
-  }
-});
+
 
 
 

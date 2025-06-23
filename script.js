@@ -2708,17 +2708,12 @@ if (therapyHistory.length > 0) {
 doc += `
 <div style="text-align:center; margin-top:40px;">
   <button id="generateNarrativeInNewWindow">AI Generated Diagnostic Report</button>
-  <script>
-    document.getElementById("generateNarrativeInNewWindow").addEventListener("click", () => {
-      window.opener.generateNarrativeReport();
-    });
-  </script>
 </div>
 `;
 
+
  container.innerHTML = doc;
-container.style.display = "block";
-// Reattach event listener from inside the new window
+ // Reattach event listener from inside the new window
 setTimeout(() => {
   const aiBtn = document.getElementById("generateNarrativeInNewWindow");
   if (aiBtn && window.opener && typeof window.opener.generateNarrativeReport === "function") {
@@ -2729,6 +2724,8 @@ setTimeout(() => {
     console.warn("AI button or opener.generateNarrativeReport not available");
   }
 }, 0);
+container.style.display = "block";
+
 
 const opt = {
   margin:       0.5,

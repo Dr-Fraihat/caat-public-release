@@ -2708,6 +2708,16 @@ if (therapyHistory.length > 0) {
   });
   doc += `</div>`;
 }
+doc += `
+<div style="text-align:center; margin-top:40px;">
+  <button id="generateNarrativeInNewWindow">AI Generated Diagnostic Report</button>
+  <script>
+    document.getElementById("generateNarrativeInNewWindow").addEventListener("click", () => {
+      window.opener.generateNarrativeReport();
+    });
+  </script>
+</div>
+`;
 
  container.innerHTML = doc;
 container.style.display = "block";

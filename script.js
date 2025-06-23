@@ -2990,7 +2990,9 @@ async function generateNarrativeReport() {
     hideLoading();
   }
 }}
+console.log("✅ Binding generateNarrativeReport to window");
 window.generateNarrativeReport = generateNarrativeReport;
+
 
 
 

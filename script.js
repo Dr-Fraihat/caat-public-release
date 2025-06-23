@@ -2691,7 +2691,7 @@ doc += `
 </div>
 
 <div style="text-align:center; margin-top:40px;">
-  <button onclick="generateNarrativeReport()">AI Generated Diagnostic Report</button>
+  <button id="generateNarrativeBtn">AI Generated Diagnostic Report</button>
 </div>
 `;
 if (therapyHistory.length > 0) {
@@ -2972,6 +2972,12 @@ async function generateNarrativeReport() {
   }
 }}
 window.generateNarrativeReport = generateNarrativeReport;
+document.addEventListener("DOMContentLoaded", () => {
+  const btn = document.getElementById("generateNarrativeBtn");
+  if (btn) {
+    btn.addEventListener("click", generateNarrativeReport);
+  }
+});
 
 
 

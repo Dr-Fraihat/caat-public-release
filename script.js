@@ -1,53 +1,3 @@
-
-
-
-// ✅ Firebase Configuration and Initialization
-var firebaseConfig = {
-  apiKey: "AIzaSyDHs0w6x1nBJ0TSydIgb8Hh3CjjJHTKVow",
-  authDomain: "caat-tool.firebaseapp.com",
-  projectId: "caat-tool",
-  storageBucket: "caat-tool.firebasestorage.app",
-  messagingSenderId: "877587046757",
-  appId: "1:877587046757:web:e825ad4f018cc8315a418c"
-};
-
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-}
-
-firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-
-// ✅ Declare Firestore and Auth only once
-const db = firebase.firestore();
-const auth = firebase.auth();
-
-
-// ✅ Confirm this script loaded (DevTools)
-console.log("✅ script.js loaded");
-
-// ✅ Add AI usage count limiter
-async function incrementReportCount(uid, email) {
-  if (!uid || !email) throw new Error("User ID or email missing.");
-
-  const userRef = db.collection("users").doc(uid);
-  const userDoc = await userRef.get();
-
-  if (!userDoc.exists) {
-    await userRef.set({ email, reportsUsed: 1, subscription: "trial" });
-    return 1;
-  }
-
-  const data = userDoc.data();
-  const used = data.reportsUsed || 0;
-  const subscription = data.subscription || "trial";
-
-  if (subscription === "trial" && used >= 1) {
-    throw new Error("Free trial limit reached. Please subscribe to continue.");
-  }
-
-  await userRef.update({ reportsUsed: used + 1 });
-  return used + 1;
-}
 // ========== script.js ==========
 
 // Helper functions
@@ -55,7 +5,6 @@ function getValue(id) {
   const el = document.getElementById(id);
   return el ? el.value.trim() : "";
 }
-
 
 function getRadioValue(name) {
   const el = document.querySelector(`input[name="${name}"]:checked`);
@@ -207,13 +156,9 @@ document.addEventListener("change", function (event) {
 });
 
 
-if (typeof currentLanguage === "undefined") {
-  var currentLanguage = "en";
-}
+let currentLanguage = "en";
 
-
-if (typeof translations === "undefined") {
-  var translations = {
+const translations = {
   en: {
     intakeTab: "Autism Diagnostic Intake Report (ADIR)",
     signSubmit: "Sign, Submit, And Generate Autism Diagnostic Intake Report (ADIR)",
@@ -1534,8 +1479,7 @@ generateListReport: "إنشاء قائمة تقرير التقييم التشخ�
 csectionReasonLabel: "سبب العملية القيصرية"
 
   }
- };
-}
+};
 function switchLanguage(lang) {
   currentLanguage = lang;
   document.body.dir = lang === "ar" ? "rtl" : "ltr";
@@ -1579,7 +1523,6 @@ if (langLabel) langLabel.textContent = translations[lang].selectLanguage;
 // ========== Step 1: Intake Report Generation ==========
 
 function generateFullIntakeReport() {
-  try {
   const container = document.getElementById("intakeReportContainer");
 if (!container) {
   alert("Report container not found!");
@@ -2671,26 +2614,6 @@ doc += `
 `;
 
 
-
-doc += `
-<div id="reportLanguageSelector" style="text-align: center; margin-bottom: 20px;">
-  <label style="font-weight: bold;">Select language for AI report:</label><br/>
-  <div class="dropdown-wrapper" style="display: inline-block; text-align: left; position: relative; width: 260px;">
-    <div class="dropdown-toggle" onclick="toggleLanguageDropdown()" style="padding: 10px; background: #f0f0f0; border: 1px solid #ccc; cursor: pointer;">
-      Click to select language(s)
-    </div>
-    <div class="dropdown-menu" id="languageDropdown" style="display: none; position: absolute; background: white; border: 1px solid #ccc; width: 100%; max-height: 180px; overflow-y: auto; z-index: 1000; padding: 10px;">
-      <label><input type="checkbox" name="reportLanguages" value="en" checked> English</label><br>
-      <label><input type="checkbox" name="reportLanguages" value="ar"> Arabic</label><br>
-      <label><input type="checkbox" name="reportLanguages" value="zh"> Chinese (中文)</label><br>
-      <label><input type="checkbox" name="reportLanguages" value="hi"> Hindi (हिन्दी)</label><br>
-      <label><input type="checkbox" name="reportLanguages" value="es"> Spanish (Español)</label><br>
-      <label><input type="checkbox" name="reportLanguages" value="fr"> French (Français)</label><br>
-    </div>
-  </div>
-</div>
-
-`;
 if (therapyHistory.length > 0) {
   doc += `<div class="section"><h2>Therapy History</h2>`;
   therapyHistory.forEach(t => {
@@ -2705,31 +2628,9 @@ if (therapyHistory.length > 0) {
   });
   doc += `</div>`;
 }
-doc += `
-<div style="text-align:center; margin-top:40px;">
-  <button id="generateNarrativeInNewWindow">AI Generated Diagnostic Report</button>
-</div>
-`;
-
 
  container.innerHTML = doc;
- // Reattach event listener from inside the new window
-// ✅ Safely send request to parent using postMessage
-setTimeout(() => {
-  const aiBtn = document.getElementById("generateNarrativeInNewWindow");
-  if (aiBtn && window.opener && typeof window.opener.generateNarrativeReport === "function") {
-    aiBtn.addEventListener("click", () => {
-      window.opener.generateNarrativeReport();
-    });
-  } else {
-    console.warn("AI button or window.opener.generateNarrativeReport not available");
-  }
-}, 100); // Slight delay ensures everything is rendered
-
-
 container.style.display = "block";
-
-
 const opt = {
   margin:       0.5,
   filename:     'Autism_Diagnostic_Intake_Report_ADIR.pdf',
@@ -2737,13 +2638,7 @@ const opt = {
   html2canvas:  { scale: 2 },
   jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
 };
-} catch (err) {
-  alert("An error occurred while generating the report.");
-  console.error(err);
-} finally {
-  hideLoading();
 }
-
 function evaluateDSM5(data) {
   const name = data.clientInfo.fullName.split(" ")[0].toUpperCase();
 
@@ -2808,135 +2703,325 @@ function evaluateDSM5(data) {
 async function generateNarrativeReport() {
   showLoading();
 
-  console.log("🧠 currentUser:", window.currentUser);
-
-  if (!window.currentUser || !window.currentUser.uid) {
-    alert("❌ You must be logged in to generate an AI report.");
-    hideLoading();
-    
-    return;
-  }
-
-  try {
-    await incrementReportCount(window.currentUser.uid, window.currentUser.email);
-  } catch (err) {
-    alert("⚠️ " + err.message);
-    hideLoading();
-    return;
-  }
-
   const data = window.generatedReportData;
   if (!data) {
     alert("Please generate the full intake report first.");
-    hideLoading();
     return;
   }
 
-  const selectedLangs = Array.from(document.querySelectorAll('input[name="reportLanguages"]:checked'))
-    .map(cb => cb.value);
+ const selectedLang = document.getElementById("reportLanguage").value;
+ const isArabic = selectedLang === "ar";
 
-  if (selectedLangs.length === 0) {
-    alert("Please select at least one language for the AI report.");
-    hideLoading();
+const selectedLangs = [selectedLang];
+
+try {
+  const response = await fetch("http://localhost:5000/generate-report", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ data, languages: selectedLangs })
+  });
+
+  if (!response.ok) {
+    alert("Failed to generate narrative report.");
     return;
   }
+
+  const result = await response.json();
+  const newWin = window.open("", "_blank");
+
+  newWin.document.write(`
+  <html>
+    <head>
+      <title>Autism Diagnostic Intake Report (ADIR)</title>
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          margin: 0;
+          padding: 0;
+        }
+
+        @page {
+          margin: 2.5cm 2cm;
+        }
+
+        .cover-page {
+          height: 100vh;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          text-align: center;
+          page-break-after: always;
+        }
+
+        .cover-logo {
+          text-align: center;
+          margin-bottom: 40px;
+        }
+
+        .cover-logo img {
+          height: 80px;
+        }
+
+        .cover-logo h2 {
+          font-size: 16px;
+          color: #1a3e80;
+          font-weight: bold;
+          margin: 10px 0 0;
+        }
+
+        .cover-logo h3 {
+          font-size: 14px;
+          color: #1a3e80;
+          font-weight: normal;
+        }
+
+        .cover-title {
+          font-size: 36px;
+          font-weight: bold;
+          color: red;
+          margin-bottom: 10px;
+        }
+
+        .cover-subtitle {
+          font-size: 20px;
+          color: red;
+        }
+
+        .info-page {
+          page-break-after: always;
+          padding: 3cm 2cm;
+        }
+
+        .info-page h2 {
+          text-align: center;
+          color: #1a3e80;
+          margin-bottom: 20px;
+        }
+
+        .info-page p {
+          font-size: 14px;
+          line-height: 1.6;
+        }
+
+        .footer {
+          text-align: center;
+          font-size: 12px;
+          color: #1a3e80;
+          margin-top: 40px;
+          border-top: 1px solid #ccc;
+          padding-top: 10px;
+        }
+
+        .narrative-body {
+          padding: 3cm 2cm;
+          font-size: 14px;
+          page-break-before: always;
+        }
+
+        .narrative-body p {
+          margin: 0 0 1em 0;
+          line-height: 1.6;
+        }
+      </style>
+    </head>
+    <body>
+      <!-- COVER PAGE -->
+      <div class="cover-page">
+  <div class="cover-logo">
+    <img src="https://i.postimg.cc/TPNDd6ZD/aac-logo.png" alt="AAC Logo">
+    <h2>AMERICAN AUTISM COUNCIL FOR ACCREDITATION AND CONTINUING EDUCATION</h2>
+    <h3>Comprehensive Autism Assessment Tool (CAAT)</h3>
+  </div>
+  <div class="cover-title">Autism Diagnostic Intake Report (ADIR)</div>
+  <div class="cover-subtitle">Private and Confidential</div>
+
+  <!-- ✅ Add this block here -->
+  <div class="footer">
+    2870 E Oakland Park Blvd Fort Lauderdale, FL 33306 *** info@americanautismcouncil.org *** www.americanautismcouncil.org
+  </div>
+</div>
+
+      <!-- CLIENT INFORMATION PAGE -->
+      <div class="info-page">
+        <h2>Confidentiality Notice</h2>
+        <p style="text-align: justify; max-width: 700px; margin: auto;">
+          The contents of this report are of a confidential and sensitive nature and should not be duplicated without the consent of the parents. The data contained herein is valid for a limited period and due to the changing and developing nature of children, the information and recommendations are meant for current use. Reference to or use of this report in future years should be made with caution.
+        </p>
+
+        <h2 style="margin-top: 40px;">Client Information</h2>
+        <hr/>
+        <p><strong>Name:</strong> ${data.clientInfo.fullName}</p>
+        <p><strong>Date of Birth:</strong> ${data.clientInfo.dob}</p>
+        <p><strong>Intake Date:</strong> ${data.clientInfo.intakeDate}</p>
+        <p><strong>Age at Assessment:</strong> ${data.clientInfo.age}</p>
+        <p><strong>Gender:</strong> ${data.clientInfo.gender}</p>
+        <p><strong>Reported By:</strong> ${data.clientInfo.caseManager}</p>
+        <p><strong>Date of Report:</strong> ${data.clientInfo.reportDate}</p>
+
+        <div class="footer">
+          2870 E Oakland Park Blvd Fort Lauderdale, FL 33306 *** info@americanautismcouncil.org *** www.americanautismcouncil.org
+        </div>
+      </div>
+
+      <!-- MAIN NARRATIVE REPORT -->
+      <div class="narrative-body">
+        ${result.report
+  .trim()
+  .split(/\n{2,}/)  // Split by double line breaks (paragraphs)
+  .map(paragraph => `<p>${paragraph.trim()}</p>`)
+  .join("")}
+
+
+      </div>
+    </body>
+  </html>
+  `);
+
+  newWin.document.close();
+} catch (error) {
+  alert("An error occurred while generating the report.");
+  console.error(error);
+} finally {
+  hideLoading(); // ✅ Spinner always hides
+}
+}
+
+async function generateAIReportDirect() {
+  showLoading();
 
   try {
-    const response = await fetch("https://caat-backend.onrender.com/generate-report", {
+    generateFullIntakeReport();
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    const data = window.generatedReportData;
+    if (!data) {
+      hideLoading();
+      alert("Something went wrong. Could not generate report data.");
+      return;
+    }
+
+    const selectedLang = document.getElementById("reportLanguage")?.value || "en";
+const selectedLangs = [selectedLang];
+
+
+    if (selectedLangs.length === 0) {
+      hideLoading();
+      alert("Please select at least one language for the AI report.");
+      return;
+    }
+
+    const response = await fetch("http://localhost:5000/generate-report", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ data, languages: selectedLangs })
     });
 
     if (!response.ok) {
-      alert("Failed to generate narrative report.");
       hideLoading();
+      alert("Failed to generate narrative report.");
       return;
     }
 
     const result = await response.json();
     const newWin = window.open("", "_blank");
+
     newWin.document.write(`
       <html>
         <head>
-        <title>Autism Diagnostic Intake Report (ADIR)</title>
-        <style>
-          body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-          }
-          @page {
-            margin: 2.5cm 2cm;
-          }
-          .cover-page {
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            page-break-after: always;
-          }
-          .cover-logo {
-            text-align: center;
-            margin-bottom: 40px;
-          }
-          .cover-logo img {
-            height: 80px;
-          }
-          .cover-logo h2 {
-            font-size: 16px;
-            color: #1a3e80;
-            font-weight: bold;
-            margin: 10px 0 0;
-          }
-          .cover-logo h3 {
-            font-size: 14px;
-            color: #1a3e80;
-            font-weight: normal;
-          }
-          .cover-title {
-            font-size: 36px;
-            font-weight: bold;
-            color: red;
-            margin-bottom: 10px;
-          }
-          .cover-subtitle {
-            font-size: 20px;
-            color: red;
-          }
-          .info-page {
-            page-break-after: always;
-            padding: 3cm 2cm;
-          }
-          .info-page h2 {
-            text-align: center;
-            color: #1a3e80;
-            margin-bottom: 20px;
-          }
-          .info-page p {
-            font-size: 14px;
-            line-height: 1.6;
-          }
-          .footer {
-            text-align: center;
-            font-size: 12px;
-            color: #1a3e80;
-            margin-top: 40px;
-            border-top: 1px solid #ccc;
-            padding-top: 10px;
-          }
-          .narrative-body {
-            padding: 3cm 2cm;
-            font-size: 14px;
-            page-break-before: always;
-          }
-          .narrative-body p {
-            margin: 0 0 1em 0;
-            line-height: 1.6;
-          }
-        </style>
+          <title>Autism Diagnostic Intake Report (ADIR)</title>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              margin: 0;
+              padding: 0;
+            }
+
+            @page {
+              margin: 2.5cm 2cm;
+            }
+
+            .cover-page {
+              height: 100vh;
+              display: flex;
+              flex-direction: column;
+              justify-content: center;
+              align-items: center;
+              text-align: center;
+              page-break-after: always;
+            }
+
+            .cover-logo {
+              text-align: center;
+              margin-bottom: 40px;
+            }
+
+            .cover-logo img {
+              height: 80px;
+            }
+
+            .cover-logo h2 {
+              font-size: 16px;
+              color: #1a3e80;
+              font-weight: bold;
+              margin: 10px 0 0;
+            }
+
+            .cover-logo h3 {
+              font-size: 14px;
+              color: #1a3e80;
+              font-weight: normal;
+            }
+
+            .cover-title {
+              font-size: 36px;
+              font-weight: bold;
+              color: red;
+              margin-bottom: 10px;
+            }
+
+            .cover-subtitle {
+              font-size: 20px;
+              color: red;
+            }
+
+            .info-page {
+              page-break-after: always;
+              padding: 3cm 2cm;
+            }
+
+            .info-page h2 {
+              text-align: center;
+              color: #1a3e80;
+              margin-bottom: 20px;
+            }
+
+            .info-page p {
+              font-size: 14px;
+              line-height: 1.6;
+            }
+
+            .footer {
+              text-align: center;
+              font-size: 12px;
+              color: #1a3e80;
+              margin-top: 40px;
+              border-top: 1px solid #ccc;
+              padding-top: 10px;
+            }
+
+            .narrative-body {
+              padding: 3cm 2cm;
+              font-size: 14px;
+              page-break-before: always;
+            }
+
+            .narrative-body p {
+              margin: 0 0 1em 0;
+              line-height: 1.6;
+              text-align: justify;
+            }
+          </style>
         </head>
         <body>
           <!-- COVER PAGE -->
@@ -2948,12 +3033,13 @@ async function generateNarrativeReport() {
             </div>
             <div class="cover-title">Autism Diagnostic Intake Report (ADIR)</div>
             <div class="cover-subtitle">Private and Confidential</div>
+
             <div class="footer">
               2870 E Oakland Park Blvd Fort Lauderdale, FL 33306 *** info@americanautismcouncil.org *** www.americanautismcouncil.org
             </div>
           </div>
 
-          <!-- CLIENT INFORMATION PAGE -->
+          <!-- INFO PAGE -->
           <div class="info-page">
             <h2>Confidentiality Notice</h2>
             <p style="text-align: justify; max-width: 700px; margin: auto;">
@@ -2975,26 +3061,36 @@ async function generateNarrativeReport() {
             </div>
           </div>
 
-          <!-- MAIN NARRATIVE REPORT -->
-          <div class="narrative-body">
-            ${result.report.replace(/\n/g, "<p>$&</p>")} ${evaluateDSM5(data)}
-          </div>
+          <!-- NARRATIVE -->
+         <div class="narrative-body">
+  ${result.report
+    .trim()
+    .split(/\n{2,}/)                         // Split by empty lines (double \n)
+    .map(paragraph => `<p>${paragraph.trim()}</p>`)
+    .join("")}
+  ${evaluateDSM5(data)}
+</div>
+
+<!-- SIGNATURE SECTION -->
+<div style="padding: 3cm 2cm; font-size: 14px; margin-top: 60px;">
+  <h2 style="color:#1a3e80; font-size:20px; border-bottom: 1px solid #aaa;">Signature</h2>
+  <p><strong>Case Manager Name:</strong> ${data.clientInfo.caseManager || "Not provided"}</p>
+  <p><strong>Case Manager Signature:</strong> ${data.clientInfo.caseManagerSignature || "Not signed"}</p>
+  <p><strong>Date:</strong> ${data.clientInfo.reportDate || "Not dated"}</p>
+  <br>
+  <p>This report has been reviewed and signed by the responsible clinician to affirm the accuracy and completeness of the information presented.</p>
+</div>
+
+
         </body>
       </html>
     `);
+
     newWin.document.close();
   } catch (err) {
-    alert("An error occurred while generating the report.");
     console.error(err);
+    alert("An error occurred while generating the AI report.");
   } finally {
     hideLoading();
   }
 }
-}
-console.log("✅ Binding generateNarrativeReport to window");
-window.generateNarrativeReport = generateNarrativeReport;
-
-
-
-
-

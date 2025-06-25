@@ -49,7 +49,7 @@ document.addEventListener("DOMContentLoaded", () => {
           console.log("✅ Logged in:", user.email);
           if (status) status.textContent = "Login successful!";
           alert("Login successful!");
-          window.location.href = "caat.html";
+          window.location.href = "index.html";
         })
         .catch((error) => {
           console.error("❌ Login failed:", error.message);
@@ -69,7 +69,7 @@ document.addEventListener("DOMContentLoaded", () => {
         .then(() => {
           if (status) status.textContent = "Signup successful!";
           alert("Signup successful!");
-          window.location.href = "caat.html";
+         window.location.href = "index.html";
         })
         .catch((error) => {
           alert(error.message);

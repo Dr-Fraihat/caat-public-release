@@ -7,6 +7,17 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <!-- This goes right after <body> -->
+<div id="loginSection" style="display: none;">
+  <!-- You can customize this form -->
+  <form id="loginForm">
+    <input type="email" id="email" placeholder="Email" required />
+    <input type="password" id="password" placeholder="Password" required />
+    <button type="submit">Login</button>
+  </form>
+</div>
+
+<div id="protectedAppSection" style="display: none;">
  <div style="text-align: right; padding: 10px 20px;">
   <label for="languageSelect" style="font-weight: bold;">Select Language:</label>
   <select id="languageSelect" onchange="switchLanguage(this.value)">
@@ -1923,7 +1934,15 @@
 
 <!-- Add html2pdf.js library -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-<script src="script.js"></script>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<!-- App Scripts -->
+<script defer src="app.js"></script>
+<script defer src="script.js"></script>
 
 <!-- LOADING OVERLAY -->
 <div id="loadingOverlay" class="hidden">
@@ -1932,8 +1951,7 @@
     <p style="margin-top: 15px; font-weight: bold;">Generating AI Report, please wait…</p>
   </div>
 </div>
-<!-- Link app.js at the end -->
-<script defer src="app.js"></script>
 
+</div> <!-- close protectedAppSection -->
 </body>
 </html>

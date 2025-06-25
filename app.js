@@ -15,6 +15,22 @@ firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
 window.db = window.db || firebase.firestore();
 window.auth = window.auth || firebase.auth();
+firebase.auth().onAuthStateChanged((user) => {
+  window.currentUser = user;
+
+  const loginSection = document.getElementById("loginSection");
+  const protectedAppSection = document.getElementById("protectedAppSection");
+
+  if (user) {
+    // Show protected content, hide login
+    if (protectedAppSection) protectedAppSection.style.display = "block";
+    if (loginSection) loginSection.style.display = "none";
+  } else {
+    // Show login, hide protected content
+    if (protectedAppSection) protectedAppSection.style.display = "none";
+    if (loginSection) loginSection.style.display = "block";
+  }
+});
 
 
 // ✅ Track user globally
@@ -49,7 +65,8 @@ document.addEventListener("DOMContentLoaded", () => {
           console.log("✅ Logged in:", user.email);
           if (status) status.textContent = "Login successful!";
           alert("Login successful!");
-          window.location.href = "index.html";
+          location.reload(); // ✅ refresh the page so it re-renders for the authenticated user
+
         })
         .catch((error) => {
           console.error("❌ Login failed:", error.message);
@@ -69,7 +86,8 @@ document.addEventListener("DOMContentLoaded", () => {
         .then(() => {
           if (status) status.textContent = "Signup successful!";
           alert("Signup successful!");
-         window.location.href = "index.html";
+         location.reload(); // ✅ refresh the page so it re-renders for the authenticated user
+
         })
         .catch((error) => {
           alert(error.message);

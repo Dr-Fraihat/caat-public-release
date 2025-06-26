@@ -2929,6 +2929,12 @@ const selectedLangs = [selectedLang];
 
     const result = await response.json();
     const newWin = window.open("", "_blank");
+if (!newWin) {
+  alert("Popup was blocked. Please allow popups for this site to view the report.");
+  hideLoading();
+  return;
+}
+
 
     newWin.document.write(`
       <html>

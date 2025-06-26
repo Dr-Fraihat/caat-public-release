@@ -2911,7 +2911,8 @@ const selectedLangs = [selectedLang];
       return;
     }
 
-    const response = await fetch("http://localhost:5000/generate-report", {
+    const response = await fetch("https://caat-backend.onrender.com/generate-report", {
+
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ data, languages: selectedLangs })

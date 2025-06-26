@@ -2851,13 +2851,13 @@ try {
 
         <h2 style="margin-top: 40px;">Client Information</h2>
         <hr/>
-        <p><strong>Name:</strong> ${data.clientInfo.fullName}</p>
-        <p><strong>Date of Birth:</strong> ${data.clientInfo.dob}</p>
-        <p><strong>Intake Date:</strong> ${data.clientInfo.intakeDate}</p>
-        <p><strong>Age at Assessment:</strong> ${data.clientInfo.age}</p>
-        <p><strong>Gender:</strong> ${data.clientInfo.gender}</p>
-        <p><strong>Reported By:</strong> ${data.clientInfo.caseManager}</p>
-        <p><strong>Date of Report:</strong> ${data.clientInfo.reportDate}</p>
+       <p><strong>Name:</strong> ${safeGet(data.clientInfo, "fullName")}</p>
+<p><strong>Date of Birth:</strong> ${safeGet(data.clientInfo, "dob")}</p>
+<p><strong>Intake Date:</strong> ${safeGet(data.clientInfo, "intakeDate")}</p>
+<p><strong>Age at Assessment:</strong> ${safeGet(data.clientInfo, "age")}</p>
+<p><strong>Gender:</strong> ${safeGet(data.clientInfo, "gender")}</p>
+<p><strong>Reported By:</strong> ${safeGet(data.clientInfo, "caseManager")}</p>
+<p><strong>Date of Report:</strong> ${safeGet(data.clientInfo, "reportDate")}</p>
 
         <div class="footer">
           2870 E Oakland Park Blvd Fort Lauderdale, FL 33306 *** info@americanautismcouncil.org *** www.americanautismcouncil.org
@@ -2885,6 +2885,9 @@ try {
 } finally {
   hideLoading(); // ✅ Spinner always hides
 }
+}
+function safeGet(obj, key) {
+  return obj?.[key] || "Not provided";
 }
 
 async function generateAIReportDirect() {
@@ -3075,9 +3078,9 @@ const selectedLangs = [selectedLang];
 <!-- SIGNATURE SECTION -->
 <div style="padding: 3cm 2cm; font-size: 14px; margin-top: 60px;">
   <h2 style="color:#1a3e80; font-size:20px; border-bottom: 1px solid #aaa;">Signature</h2>
-  <p><strong>Case Manager Name:</strong> ${data.clientInfo.caseManager || "Not provided"}</p>
-  <p><strong>Case Manager Signature:</strong> ${data.clientInfo.caseManagerSignature || "Not signed"}</p>
-  <p><strong>Date:</strong> ${data.clientInfo.reportDate || "Not dated"}</p>
+  <p><strong>Case Manager Name:</strong> ${safeGet(data.clientInfo, "caseManager")}</p>
+<p><strong>Case Manager Signature:</strong> ${safeGet(data.clientInfo, "caseManagerSignature")}</p>
+<p><strong>Date:</strong> ${safeGet(data.clientInfo, "reportDate")}</p>
   <br>
   <p>This report has been reviewed and signed by the responsible clinician to affirm the accuracy and completeness of the information presented.</p>
 </div>

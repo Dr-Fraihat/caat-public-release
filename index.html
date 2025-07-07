@@ -55,14 +55,12 @@
 <div class="tab" data-tab="history" data-translate="tabBackground">Background and History</div>
 <div class="tab" data-tab="observationNotes" data-translate="tabObservation">Observation Notes</div>
 <div class="tab" data-tab="signSubmitReport" data-translate="tabGenerateADIR">Sign, Submit, And Generate Autism Diagnostic Intake Report (ADIR)</div>
-
-
 </div>
 </div>
 <div class="tab-group-assessment">
   <div class="tab-group-title" data-translate="assessmentGroupTitle">Comprehensive Assessment</div>
   <div class="tab-container">
-    <div class="tab" data-tab="psychologicalAssess" data-translate="tabPsychological">Psychological Assessment</div>
+    <div class="tab" data-tab="psychological" data-translate="tabPsychological">Psychological Assessment</div>
     <div class="tab" data-tab="occupational" data-translate="tabOccupational">Occupational Assessment</div>
     <div class="tab" data-tab="speechLanguage" data-translate="tabSpeech">Speech and Language Assessment</div>
     <div class="tab" data-tab="behavioral" data-translate="tabBehavioral">Applied Behavior Analysis Assessment</div>
@@ -71,7 +69,6 @@
     <div class="tab" data-tab="signsubmit" data-translate="tabSignSubmit">Sign, Submit, and Generate Comprehensive Report</div>
   </div>
 </div>
-
 
 <!-- ========== Demographic Section ========== -->
 <div class="container active" id="demographic">
@@ -1840,117 +1837,13 @@
   </div>
 </div>
 
-
 <!-- ========== PSYCHOLOGICAL (NEW TAB) ========== -->
-
-<!-- PSYCHOLOGICAL ASSESSMENT FORM (Complete and Fully Working) -->
-<div class="container" id="psychologicalAssess">
-  <div class="form-section">
-    <h2>Section 3: Psychological Assessment</h2>
-
-    <!-- CARS-2 SECTION -->
-    <div class="mini-section">
-      <h3 class="sub-heading">Childhood Autism Rating Scale (CARS-2)</h3>
-      <p>Rate each item from 1 (Within Normal) to 4 (Severely Abnormal). You may use half-points (e.g., 2.5). Optional comments help clarify clinician judgment.</p>
-      <table id="cars2Table">
-        <thead>
-          <tr><th>Item</th><th>Score (1–4)</th><th>Clinician Notes (optional)</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>1. Relating to People</td><td><input type="number" step="0.5" min="1" max="4" name="cars2[]"></td><td><input type="text" name="cars2_note[]"></td></tr>
-          <tr><td>2. Imitation</td><td><input type="number" step="0.5" min="1" max="4" name="cars2[]"></td><td><input type="text" name="cars2_note[]"></td></tr>
-          <tr><td>3. Emotional Response</td><td><input type="number" step="0.5" min="1" max="4" name="cars2[]"></td><td><input type="text" name="cars2_note[]"></td></tr>
-          <tr><td>4. Body Use</td><td><input type="number" step="0.5" min="1" max="4" name="cars2[]"></td><td><input type="text" name="cars2_note[]"></td></tr>
-          <tr><td>5. Object Use</td><td><input type="number" step="0.5" min="1" max="4" name="cars2[]"></td><td><input type="text" name="cars2_note[]"></td></tr>
-          <tr><td>6. Adaptation to Change</td><td><input type="number" step="0.5" min="1" max="4" name="cars2[]"></td><td><input type="text" name="cars2_note[]"></td></tr>
-          <tr><td>7. Visual Response</td><td><input type="number" step="0.5" min="1" max="4" name="cars2[]"></td><td><input type="text" name="cars2_note[]"></td></tr>
-          <tr><td>8. Listening Response</td><td><input type="number" step="0.5" min="1" max="4" name="cars2[]"></td><td><input type="text" name="cars2_note[]"></td></tr>
-          <tr><td>9. Taste, Smell & Touch Response</td><td><input type="number" step="0.5" min="1" max="4" name="cars2[]"></td><td><input type="text" name="cars2_note[]"></td></tr>
-          <tr><td>10. Fear or Nervousness</td><td><input type="number" step="0.5" min="1" max="4" name="cars2[]"></td><td><input type="text" name="cars2_note[]"></td></tr>
-          <tr><td>11. Verbal Communication</td><td><input type="number" step="0.5" min="1" max="4" name="cars2[]"></td><td><input type="text" name="cars2_note[]"></td></tr>
-          <tr><td>12. Nonverbal Communication</td><td><input type="number" step="0.5" min="1" max="4" name="cars2[]"></td><td><input type="text" name="cars2_note[]"></td></tr>
-          <tr><td>13. Activity Level</td><td><input type="number" step="0.5" min="1" max="4" name="cars2[]"></td><td><input type="text" name="cars2_note[]"></td></tr>
-          <tr><td>14. Intellectual Response Consistency</td><td><input type="number" step="0.5" min="1" max="4" name="cars2[]"></td><td><input type="text" name="cars2_note[]"></td></tr>
-          <tr><td>15. General Impressions</td><td><input type="number" step="0.5" min="1" max="4" name="cars2[]"></td><td><input type="text" name="cars2_note[]"></td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- SB5 SECTION -->
-    <div class="mini-section">
-      <h3 class="sub-heading">Stanford-Binet Intelligence Scales (SB5)</h3>
-      <p>Enter scaled scores (1–19) for each subtest. You may leave blank if not administered. Notes are optional.</p>
-      <table>
-        <thead><tr><th>Domain</th><th>Verbal</th><th>Nonverbal</th><th>Notes</th></tr></thead>
-        <tbody>
-          <tr><td>Fluid Reasoning</td><td><input type="number" min="1" max="19" name="sb5_fr_v"></td><td><input type="number" min="1" max="19" name="sb5_fr_nv"></td><td><input type="text" name="sb5_fr_note"></td></tr>
-          <tr><td>Knowledge</td><td><input type="number" min="1" max="19" name="sb5_kn_v"></td><td><input type="number" min="1" max="19" name="sb5_kn_nv"></td><td><input type="text" name="sb5_kn_note"></td></tr>
-          <tr><td>Quantitative Reasoning</td><td><input type="number" min="1" max="19" name="sb5_qr_v"></td><td><input type="number" min="1" max="19" name="sb5_qr_nv"></td><td><input type="text" name="sb5_qr_note"></td></tr>
-          <tr><td>Visual-Spatial Processing</td><td><input type="number" min="1" max="19" name="sb5_vs_v"></td><td><input type="number" min="1" max="19" name="sb5_vs_nv"></td><td><input type="text" name="sb5_vs_note"></td></tr>
-          <tr><td>Working Memory</td><td><input type="number" min="1" max="19" name="sb5_wm_v"></td><td><input type="number" min="1" max="19" name="sb5_wm_nv"></td><td><input type="text" name="sb5_wm_note"></td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- ADOS-2 SECTION -->
-    <div class="mini-section">
-      <h3 class="sub-heading">Autism Diagnostic Observation Schedule, 2nd Edition (ADOS-2)</h3>
-      <p>Please complete the relevant items based on the module administered. Use numeric scores as per ADOS-2 coding (typically 0–3, with some items allowing "8" for N/A).</p>
-      <label>Module Administered:</label>
-      <select name="ados_module">
-        <option value="">-- Select Module --</option>
-        <option value="Module 1">Module 1</option>
-        <option value="Module 2">Module 2</option>
-        <option value="Module 3">Module 3</option>
-        <option value="Module 4">Module 4</option>
-        <option value="Toddler Module">Toddler Module</option>
-      </select>
-      <table>
-        <thead><tr><th>Item</th><th>Score</th></tr></thead>
-        <tbody>
-          <tr><td>Communication</td><td><input type="number" min="0" max="3" name="ados_comm"></td></tr>
-          <tr><td>Reciprocal Social Interaction</td><td><input type="number" min="0" max="3" name="ados_social"></td></tr>
-          <tr><td>Play / Imagination</td><td><input type="number" min="0" max="3" name="ados_play"></td></tr>
-          <tr><td>Stereotyped Behaviors & Restricted Interests</td><td><input type="number" min="0" max="3" name="ados_rrb"></td></tr>
-          <tr><td>Overall Impression</td><td><input type="number" min="0" max="3" name="ados_impression"></td></tr>
-        </tbody>
-      </table>
-      <label>ADOS Administration Notes (optional):</label>
-      <textarea name="ados_notes" rows="3" placeholder="Describe behavior during the session, rapport, challenges, etc."></textarea>
-    </div>
-
-    <!-- OBSERVATION NOTES -->
-    <div class="mini-section">
-      <h3 class="sub-heading">Observations During Assessment</h3>
-      <label>Child required breaks during testing?</label>
-      <select name="observe_breaks"><option value="no">No</option><option value="yes">Yes</option></select>
-      <label>If yes, how many breaks?</label>
-      <input type="number" name="observe_breaks_count" min="0" max="10">
-      <label>Engagement level (1 = poor, 5 = excellent)</label>
-      <input type="range" name="observe_engagement" min="1" max="5">
-      <label>Clinician summary observations</label>
-      <textarea name="observe_notes" rows="4" placeholder="Describe attention, cooperation, behavior, etc."></textarea>
-    </div>
-
-    <!-- IEP GOALS -->
-    <div class="mini-section">
-      <h3 class="sub-heading">IEP Goal Domains (Target Areas)</h3>
-      <p>Select all areas where the child requires support. These will guide AI-generated IEP suggestions.</p>
-      <label><input type="checkbox" name="iep_goals[]" value="communication"> Communication (e.g., requesting, labeling)</label>
-      <label><input type="checkbox" name="iep_goals[]" value="social"> Social Skills (e.g., turn-taking, greetings)</label>
-      <label><input type="checkbox" name="iep_goals[]" value="emotional"> Emotional Regulation (e.g., coping strategies)</label>
-      <label><input type="checkbox" name="iep_goals[]" value="executive"> Executive Function (e.g., organization, planning)</label>
-      <label><input type="checkbox" name="iep_goals[]" value="dailyLiving"> Daily Living Skills (e.g., hygiene, routines)</label>
-      <label><input type="checkbox" name="iep_goals[]" value="behavior"> Behavior Management (e.g., reduce aggression, FBA)</label>
-      <label><input type="checkbox" name="iep_goals[]" value="academics"> Academic Support (e.g., reading, writing, math)</label>
-      <label><input type="checkbox" name="iep_goals[]" value="other"> Other</label>
-      <textarea name="iep_goals_other" rows="2" placeholder="If 'Other', describe goal areas..."></textarea>
-    </div>
-
-  </div>
+<div class="container" id="psychological">
+<div class="form-section">
+<h2>Section 3: Psychological</h2>
+<p>(Future content goes here)</p>
 </div>
-
-
+</div>
 <!-- ========== OCCUPATIONAL (NEW TAB) ========== -->
 <div class="container" id="occupational">
 <div class="form-section">
@@ -2062,4 +1955,3 @@
 </div> <!-- close protectedAppSection -->
 </body>
 </html>
-

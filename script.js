@@ -86,32 +86,19 @@ document.addEventListener("DOMContentLoaded", () => {
     toggleExposureField(); // Run on page load
   }
 
-  // ✅ Tab switching logic (merged here)
-  document.querySelectorAll(".tab-container").forEach((tabGroup) => {
-    const tabs = tabGroup.querySelectorAll(".tab");
-    const containers = Array.from(tabs).map((tab) => {
+  const tabs = document.querySelectorAll(".tab");
+  const containers = document.querySelectorAll(".container");
+
+  tabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
       const tabId = tab.getAttribute("data-tab");
-      return document.getElementById(tabId);
+      tabs.forEach((t) => t.classList.remove("active"));
+      containers.forEach((c) => c.classList.remove("active"));
+      tab.classList.add("active");
+      const target = document.getElementById(tabId);
+      if (target) target.classList.add("active");
     });
-
-    tabs.forEach((tab, index) => {
-      tab.addEventListener("click", () => {
-        tabs.forEach((t) => t.classList.remove("active"));
-        containers.forEach((c) => c && c.classList.remove("active"));
-
-        tab.classList.add("active");
-        containers[index] && containers[index].classList.add("active");
-      });
-    });
-
-    // ✅ Set the first tab active by default
-    if (tabs.length > 0) {
-      tabs[0].classList.add("active");
-      containers[0] && containers[0].classList.add("active");
-    }
   });
-});
-
 
   // ✅ Delivery mode logic
   const deliveryRadios = document.querySelectorAll('input[name="deliveryMode"]');
@@ -137,7 +124,7 @@ document.addEventListener("DOMContentLoaded", () => {
     firstVisibleTab.classList.add("active");
     firstVisibleContainer.classList.add("active");
   }
-
+});
 
 function showLoading() {
   document.getElementById("loadingOverlay").classList.remove("hidden");

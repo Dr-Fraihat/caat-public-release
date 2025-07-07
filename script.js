@@ -86,7 +86,7 @@ document.addEventListener("DOMContentLoaded", () => {
     toggleExposureField(); // Run on page load
   }
 
-  document.addEventListener("DOMContentLoaded", () => {
+  // ✅ Tab switching logic (merged here)
   document.querySelectorAll(".tab-container").forEach((tabGroup) => {
     const tabs = tabGroup.querySelectorAll(".tab");
     const containers = Array.from(tabs).map((tab) => {
@@ -104,7 +104,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
 
-    // Activate first tab by default
+    // ✅ Set the first tab active by default
     if (tabs.length > 0) {
       tabs[0].classList.add("active");
       containers[0] && containers[0].classList.add("active");

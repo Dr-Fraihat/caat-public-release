@@ -87,7 +87,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   const tabs = document.querySelectorAll(".tab");
-  const containers = document.querySelectorAll(".container");
+  const containers = document.querySelectorAll(".tab-group-intake .container, .tab-group-assessment .container");
+
 
   tabs.forEach((tab) => {
     tab.addEventListener("click", () => {

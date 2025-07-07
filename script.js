@@ -95,7 +95,7 @@ document.addEventListener("DOMContentLoaded", () => {
       tabs.forEach((t) => t.classList.remove("active"));
       containers.forEach((c) => c.classList.remove("active"));
       tab.classList.add("active");
-      const target = document.getElementById(tabId);
+      const target = document.querySelector(`.container#${tabId}`);
       if (target) target.classList.add("active");
     });
   });

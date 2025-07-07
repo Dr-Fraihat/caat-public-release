@@ -137,7 +137,7 @@ document.addEventListener("DOMContentLoaded", () => {
     firstVisibleTab.classList.add("active");
     firstVisibleContainer.classList.add("active");
   }
-});
+
 
 function showLoading() {
   document.getElementById("loadingOverlay").classList.remove("hidden");

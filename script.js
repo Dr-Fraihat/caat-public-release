@@ -73,6 +73,7 @@ function addRow(tableId) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  // ✅ Secondary language toggle
   const secondaryLangInput = document.getElementById("secondaryLanguages");
   const exposureWrapper = document.getElementById("languageExposureWrapper");
 
@@ -86,41 +87,41 @@ document.addEventListener("DOMContentLoaded", () => {
     toggleExposureField(); // Run on page load
   }
 
-    document.querySelectorAll(".tab-container").forEach((tabGroup) => {
+  // ✅ TAB SWITCHING — supports multiple tab groups
+  document.querySelectorAll(".tab-container").forEach((tabGroup) => {
     const tabs = tabGroup.querySelectorAll(".tab");
-    const containers = Array.from(tabs).map((tab) => {
-      const tabId = tab.getAttribute("data-tab");
-      return document.getElementById(tabId);
-    });
 
-    tabs.forEach((tab, index) => {
+    tabs.forEach((tab) => {
       tab.addEventListener("click", () => {
-        tabs.forEach((t) => t.classList.remove("active"));
-        containers.forEach((c) => c?.classList.remove("active"));
+        const tabId = tab.getAttribute("data-tab");
 
+        // Find the outer section (intake or assessment)
+        const section = tabGroup.closest("#intakeSection, #assessmentSection");
+        if (!section) return;
+
+        // Remove 'active' from all tabs and containers in this section
+        section.querySelectorAll(".tab").forEach((t) => t.classList.remove("active"));
+        section.querySelectorAll(".container").forEach((c) => c.classList.remove("active"));
+
+        // Activate clicked tab and matching container
         tab.classList.add("active");
-        containers[index]?.classList.add("active");
+        const target = section.querySelector(`#${tabId}`);
+        if (target) target.classList.add("active");
       });
     });
-
-    // Default activate first tab in group
-    if (tabs.length > 0 && containers[0]) {
-      tabs[0].classList.add("active");
-      containers[0].classList.add("active");
-    }
   });
 
-
-  // ✅ Delivery mode logic
+  // ✅ Delivery mode toggle logic
   const deliveryRadios = document.querySelectorAll('input[name="deliveryMode"]');
-  deliveryRadios.forEach(radio => {
+  deliveryRadios.forEach((radio) => {
     radio.addEventListener("change", () => {
       const selected = document.querySelector('input[name="deliveryMode"]:checked')?.value;
       toggleDisplay("csectionReasonWrapper", selected === "c-section");
       toggleDisplay("otherDeliveryWrapper", selected === "other");
-    
+    });
   });
-}); // ✅ Final closing of DOMContentLoaded
+
+
 
 
   const firstVisibleTab = Array.from(tabs).find((tab) => {

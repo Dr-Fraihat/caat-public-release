@@ -73,58 +73,58 @@ function addRow(tableId) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Language Exposure Field Logic
   const secondaryLangInput = document.getElementById("secondaryLanguages");
   const exposureWrapper = document.getElementById("languageExposureWrapper");
 
   function toggleExposureField() {
-    const hasSecondary = secondaryLangInput?.value.trim().length > 0;
+    const hasSecondary = secondaryLangInput.value.trim().length > 0;
     exposureWrapper.style.display = hasSecondary ? "block" : "none";
   }
 
   if (secondaryLangInput && exposureWrapper) {
     secondaryLangInput.addEventListener("input", toggleExposureField);
-    toggleExposureField();
+    toggleExposureField(); // Run on page load
   }
 
-  // ✅ FIXED UNIVERSAL TAB LOGIC
-  document.querySelectorAll(".tab-container").forEach((tabContainer) => {
-    const tabs = tabContainer.querySelectorAll(".tab");
-    const tabIds = Array.from(tabs).map((tab) => tab.getAttribute("data-tab"));
-    const tabContents = tabIds.map((id) => document.getElementById(id));
+  const tabs = document.querySelectorAll(".tab");
+  const containers = document.querySelectorAll(".container");
 
-    // Handle tab clicks
-    tabs.forEach((tab, index) => {
-  tab.addEventListener("click", () => {
-    tabs.forEach((t) => t.classList.remove("active"));
-    tabContents.forEach((c) => c?.classList.remove("active"));
-
-    tab.classList.add("active");
-    tabContents[index]?.classList.add("active");
-  });
-});
-
-
-    // ✅ Auto-activate first tab per group
-    if (tabs.length > 0 && tabContents[0]) {
-      tabs[0].classList.add("active");
-      tabContents[0].classList.add("active");
-    }
+  tabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      const tabId = tab.getAttribute("data-tab");
+      tabs.forEach((t) => t.classList.remove("active"));
+      containers.forEach((c) => c.classList.remove("active"));
+      tab.classList.add("active");
+      const target = document.getElementById(tabId);
+      if (target) target.classList.add("active");
+    });
   });
 
-  // ✅ Delivery mode toggle logic
+  // ✅ Delivery mode logic
   const deliveryRadios = document.querySelectorAll('input[name="deliveryMode"]');
-  deliveryRadios.forEach((radio) => {
+  deliveryRadios.forEach(radio => {
     radio.addEventListener("change", () => {
       const selected = document.querySelector('input[name="deliveryMode"]:checked')?.value;
       toggleDisplay("csectionReasonWrapper", selected === "c-section");
       toggleDisplay("otherDeliveryWrapper", selected === "other");
-    });
+    
   });
+}); // ✅ Final closing of DOMContentLoaded
+
+
+  const firstVisibleTab = Array.from(tabs).find((tab) => {
+    const tabId = tab.getAttribute("data-tab");
+    return document.getElementById(tabId);
+  });
+  const firstVisibleContainer = Array.from(containers).find((container) => {
+    return Array.from(tabs).some((tab) => tab.getAttribute("data-tab") === container.id);
+  });
+
+  if (firstVisibleTab && firstVisibleContainer) {
+    firstVisibleTab.classList.add("active");
+    firstVisibleContainer.classList.add("active");
+  }
 });
-
-
-  
 
 function showLoading() {
   document.getElementById("loadingOverlay").classList.remove("hidden");

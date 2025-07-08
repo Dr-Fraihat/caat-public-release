@@ -124,18 +124,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
-  const firstVisibleTab = Array.from(tabs).find((tab) => {
-    const tabId = tab.getAttribute("data-tab");
-    return document.getElementById(tabId);
-  });
-  const firstVisibleContainer = Array.from(containers).find((container) => {
-    return Array.from(tabs).some((tab) => tab.getAttribute("data-tab") === container.id);
-  });
-
-  if (firstVisibleTab && firstVisibleContainer) {
-    firstVisibleTab.classList.add("active");
-    firstVisibleContainer.classList.add("active");
-  }
+  
 });
 
 function showLoading() {

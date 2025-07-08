@@ -73,7 +73,6 @@ function addRow(tableId) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  // ✅ Secondary language toggle
   const secondaryLangInput = document.getElementById("secondaryLanguages");
   const exposureWrapper = document.getElementById("languageExposureWrapper");
 
@@ -87,44 +86,44 @@ document.addEventListener("DOMContentLoaded", () => {
     toggleExposureField(); // Run on page load
   }
 
-  // ✅ TAB SWITCHING — supports multiple tab groups
-  document.querySelectorAll(".tab-container").forEach((tabGroup) => {
-    const tabs = tabGroup.querySelectorAll(".tab");
+  const tabs = document.querySelectorAll(".tab");
+  const containers = document.querySelectorAll(".container");
 
-    tabs.forEach((tab) => {
-      tab.addEventListener("click", () => {
-        const tabId = tab.getAttribute("data-tab");
-
-        // Find the outer section (intake or assessment)
-        const section = tabGroup.closest("#intakeSection, #assessmentSection");
-        if (!section) return;
-
-        // Remove 'active' from all tabs and containers in this section
-        section.querySelectorAll(".tab").forEach((t) => t.classList.remove("active"));
-        section.querySelectorAll(".container").forEach((c) => c.classList.remove("active"));
-
-        // Activate clicked tab and matching container
-        tab.classList.add("active");
-        const target = section.querySelector(`#${tabId}`);
-        if (target) target.classList.add("active");
-      });
+  tabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      const tabId = tab.getAttribute("data-tab");
+      tabs.forEach((t) => t.classList.remove("active"));
+      containers.forEach((c) => c.classList.remove("active"));
+      tab.classList.add("active");
+      const target = document.getElementById(tabId);
+      if (target) target.classList.add("active");
     });
   });
 
-  // ✅ Delivery mode toggle logic
+  // ✅ Delivery mode logic
   const deliveryRadios = document.querySelectorAll('input[name="deliveryMode"]');
-  deliveryRadios.forEach((radio) => {
+  deliveryRadios.forEach(radio => {
     radio.addEventListener("change", () => {
       const selected = document.querySelector('input[name="deliveryMode"]:checked')?.value;
       toggleDisplay("csectionReasonWrapper", selected === "c-section");
       toggleDisplay("otherDeliveryWrapper", selected === "other");
-    });
+    
+  });
+}); // ✅ Final closing of DOMContentLoaded
+
+
+  const firstVisibleTab = Array.from(tabs).find((tab) => {
+    const tabId = tab.getAttribute("data-tab");
+    return document.getElementById(tabId);
+  });
+  const firstVisibleContainer = Array.from(containers).find((container) => {
+    return Array.from(tabs).some((tab) => tab.getAttribute("data-tab") === container.id);
   });
 
-
-
-
-  
+  if (firstVisibleTab && firstVisibleContainer) {
+    firstVisibleTab.classList.add("active");
+    firstVisibleContainer.classList.add("active");
+  }
 });
 
 function showLoading() {

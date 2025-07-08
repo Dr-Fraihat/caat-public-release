@@ -95,14 +95,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Handle tab clicks
     tabs.forEach((tab, index) => {
-      tab.addEventListener("click", () => {
-        document.querySelectorAll(".tab").forEach((t) => t.classList.remove("active"));
-        document.querySelectorAll(".container").forEach((c) => c.classList.remove("active"));
+  tab.addEventListener("click", () => {
+    tabs.forEach((t) => t.classList.remove("active"));
+    tabContents.forEach((c) => c?.classList.remove("active"));
 
-        tab.classList.add("active");
-        tabContents[index]?.classList.add("active");
-      });
-    });
+    tab.classList.add("active");
+    tabContents[index]?.classList.add("active");
+  });
+});
+
 
     // ✅ Auto-activate first tab per group
     if (tabs.length > 0 && tabContents[0]) {

@@ -73,34 +73,38 @@ function addRow(tableId) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  // ✅ Toggle exposure field
+  // Language Exposure Field Logic
   const secondaryLangInput = document.getElementById("secondaryLanguages");
   const exposureWrapper = document.getElementById("languageExposureWrapper");
+
   function toggleExposureField() {
     const hasSecondary = secondaryLangInput?.value.trim().length > 0;
-    if (exposureWrapper) exposureWrapper.style.display = hasSecondary ? "block" : "none";
+    exposureWrapper.style.display = hasSecondary ? "block" : "none";
   }
+
   if (secondaryLangInput && exposureWrapper) {
     secondaryLangInput.addEventListener("input", toggleExposureField);
     toggleExposureField();
   }
 
-  // ✅ Tab switching logic for all tab groups
-  document.querySelectorAll(".tab-container").forEach((container) => {
-    const tabs = container.querySelectorAll(".tab");
+  // ✅ FIXED UNIVERSAL TAB LOGIC
+  document.querySelectorAll(".tab-container").forEach((tabContainer) => {
+    const tabs = tabContainer.querySelectorAll(".tab");
     const tabIds = Array.from(tabs).map((tab) => tab.getAttribute("data-tab"));
     const tabContents = tabIds.map((id) => document.getElementById(id));
 
+    // Handle tab clicks
     tabs.forEach((tab, index) => {
       tab.addEventListener("click", () => {
-        tabs.forEach((t) => t.classList.remove("active"));
-        tabContents.forEach((c) => c?.classList.remove("active"));
+        document.querySelectorAll(".tab").forEach((t) => t.classList.remove("active"));
+        document.querySelectorAll(".container").forEach((c) => c.classList.remove("active"));
+
         tab.classList.add("active");
         tabContents[index]?.classList.add("active");
       });
     });
 
-    // ✅ Activate first tab and container by default
+    // ✅ Auto-activate first tab per group
     if (tabs.length > 0 && tabContents[0]) {
       tabs[0].classList.add("active");
       tabContents[0].classList.add("active");
@@ -117,6 +121,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 });
+
 
   
 

@@ -73,11 +73,12 @@ function addRow(tableId) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  // ✅ Language exposure toggle
   const secondaryLangInput = document.getElementById("secondaryLanguages");
   const exposureWrapper = document.getElementById("languageExposureWrapper");
 
   function toggleExposureField() {
-    const hasSecondary = secondaryLangInput.value.trim().length > 0;
+    const hasSecondary = secondaryLangInput?.value.trim().length > 0;
     exposureWrapper.style.display = hasSecondary ? "block" : "none";
   }
 
@@ -86,55 +87,34 @@ document.addEventListener("DOMContentLoaded", () => {
     toggleExposureField(); // Run on page load
   }
 
-  document.querySelectorAll(".tab-container").forEach((tabGroup) => {
-  const tabs = tabGroup.querySelectorAll(".tab");
-  const containers = Array.from(tabs).map(tab => {
-    const tabId = tab.getAttribute("data-tab");
-    return document.getElementById(tabId);
-  });
-
-  tabs.forEach((tab, index) => {
+  // ✅ Universal tab logic (works across all groups)
+  document.querySelectorAll(".tab").forEach((tab) => {
     tab.addEventListener("click", () => {
-      tabs.forEach(t => t.classList.remove("active"));
-      containers.forEach(c => c && c.classList.remove("active"));
+      const tabId = tab.getAttribute("data-tab");
+
+      // Deactivate all tabs and containers
+      document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+      document.querySelectorAll(".container").forEach(c => c.classList.remove("active"));
+
+      // Activate clicked tab and matching container
       tab.classList.add("active");
-      containers[index] && containers[index].classList.add("active");
+      const target = document.getElementById(tabId);
+      if (target) target.classList.add("active");
     });
   });
 
-  // Default: first tab active
-  if (tabs.length > 0 && containers[0]) {
-    tabs[0].classList.add("active");
-    containers[0].classList.add("active");
-  }
-});
-
-
-  // ✅ Delivery mode logic
+  // ✅ Delivery mode toggles
   const deliveryRadios = document.querySelectorAll('input[name="deliveryMode"]');
   deliveryRadios.forEach(radio => {
     radio.addEventListener("change", () => {
       const selected = document.querySelector('input[name="deliveryMode"]:checked')?.value;
       toggleDisplay("csectionReasonWrapper", selected === "c-section");
       toggleDisplay("otherDeliveryWrapper", selected === "other");
-    
+    });
   });
-}); // ✅ Final closing of DOMContentLoaded
-
-
-  const firstVisibleTab = Array.from(tabs).find((tab) => {
-    const tabId = tab.getAttribute("data-tab");
-    return document.getElementById(tabId);
-  });
-  const firstVisibleContainer = Array.from(containers).find((container) => {
-    return Array.from(tabs).some((tab) => tab.getAttribute("data-tab") === container.id);
-  });
-
-  if (firstVisibleTab && firstVisibleContainer) {
-    firstVisibleTab.classList.add("active");
-    firstVisibleContainer.classList.add("active");
-  }
 });
+
+  
 
 function showLoading() {
   document.getElementById("loadingOverlay").classList.remove("hidden");

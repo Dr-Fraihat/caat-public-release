@@ -3107,3 +3107,9 @@ if (!newWin) {
     hideLoading();
   }
 }
+document.addEventListener("DOMContentLoaded", () => {
+  const yearSpan = document.getElementById("copyrightYear");
+  if (yearSpan) {
+    yearSpan.textContent = new Date().getFullYear();
+  }
+});

@@ -24,9 +24,9 @@
 
   <!-- 🔽 New links go here -->
   <div class="login-links">
-    <a href="#" onclick="alert('Password recovery coming soon')" class="login-link">Forgot Password?</a>
+    <a href="#" onclick="openResetModal()" class="login-link">Forgot Password?</a>
     <span>|</span>
-    <a href="#" onclick="alert('Create Account coming soon')" class="login-link">Create Account</a>
+    <a href="#" onclick="openSignupModal()" class="login-link">Create Account</a>
   </div>
 </form>
 
@@ -1976,5 +1976,36 @@
 </div>
 
 </div> <!-- close protectedAppSection -->
+<!-- SIGNUP MODAL -->
+<div id="signupModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeSignupModal()">&times;</span>
+    <h2>Create Account</h2>
+    <form id="signupForm">
+      <label for="signupEmail">Email</label>
+      <input type="email" id="signupEmail" required placeholder="Enter email" />
+
+      <label for="signupPassword">Password</label>
+      <input type="password" id="signupPassword" required placeholder="Enter password" />
+
+      <button type="submit">Sign Up</button>
+    </form>
+    <p id="signupStatus"></p>
+  </div>
+</div>
+<!-- RESET PASSWORD MODAL -->
+<div id="resetModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeResetModal()">&times;</span>
+    <h2>Reset Password</h2>
+    <form id="resetForm">
+      <label for="resetEmail">Enter your registered email</label>
+      <input type="email" id="resetEmail" required placeholder="Email address" />
+      <button type="submit">Send Reset Email</button>
+    </form>
+    <p id="resetStatus"></p>
+  </div>
+</div>
+
 </body>
 </html>

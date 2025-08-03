@@ -3113,3 +3113,50 @@ document.addEventListener("DOMContentLoaded", () => {
     yearSpan.textContent = new Date().getFullYear();
   }
 });
+function openSignupModal() {
+  document.getElementById("signupModal").style.display = "block";
+}
+
+function closeSignupModal() {
+  document.getElementById("signupModal").style.display = "none";
+}
+
+document.getElementById("signupForm").addEventListener("submit", function(e) {
+  e.preventDefault();
+  const email = document.getElementById("signupEmail").value.trim();
+  const password = document.getElementById("signupPassword").value.trim();
+  const status = document.getElementById("signupStatus");
+
+  firebase.auth().createUserWithEmailAndPassword(email, password)
+    .then((userCredential) => {
+      status.textContent = "✅ Account created successfully.";
+      closeSignupModal();
+      location.reload(); // Optional auto-login
+    })
+    .catch((error) => {
+      console.error(error);
+      status.textContent = "❌ " + error.message;
+    });
+});
+function openResetModal() {
+  document.getElementById("resetModal").style.display = "block";
+}
+
+function closeResetModal() {
+  document.getElementById("resetModal").style.display = "none";
+}
+
+document.getElementById("resetForm").addEventListener("submit", function(e) {
+  e.preventDefault();
+  const email = document.getElementById("resetEmail").value.trim();
+  const status = document.getElementById("resetStatus");
+
+  firebase.auth().sendPasswordResetEmail(email)
+    .then(() => {
+      status.textContent = "✅ Reset email sent. Check your inbox.";
+    })
+    .catch((error) => {
+      console.error(error);
+      status.textContent = "❌ " + error.message;
+    });
+});

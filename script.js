@@ -3174,7 +3174,7 @@ document.getElementById("signupForm").addEventListener("submit", function(e) {
     closeSignupModal();
 
     // 🔁 Redirect to Stripe checkout
-    fetch("http://localhost:5000/create-checkout-session", {
+    fetch("https://caat-backend.onrender.com/create-checkout-session", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"

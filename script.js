@@ -3128,15 +3128,31 @@ document.getElementById("signupForm").addEventListener("submit", function(e) {
   const status = document.getElementById("signupStatus");
 
   firebase.auth().createUserWithEmailAndPassword(email, password)
-    .then((userCredential) => {
-      status.textContent = "✅ Account created successfully.";
-      closeSignupModal();
-      location.reload(); // Optional auto-login
+  .then((userCredential) => {
+    status.textContent = "✅ Account created successfully.";
+    closeSignupModal();
+
+    // 🔁 Redirect to Stripe checkout
+    fetch("http://localhost:5000/create-checkout-session", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      }
     })
-    .catch((error) => {
-      console.error(error);
-      status.textContent = "❌ " + error.message;
+    .then(res => res.json())
+    .then(data => {
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        status.textContent = "❌ Failed to redirect to payment page.";
+      }
     });
+  })
+  .catch((error) => {
+    console.error(error);
+    status.textContent = "❌ " + error.message;
+  });
+
 });
 function openResetModal() {
   document.getElementById("resetModal").style.display = "block";

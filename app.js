@@ -61,15 +61,15 @@ document.addEventListener("DOMContentLoaded", () => {
       const password = document.getElementById("password").value;
 
       auth.signInWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-          const user = userCredential.user;
-          window.currentUser = user;
-          console.log("✅ Logged in:", user.email);
-          if (status) status.textContent = "Login successful!";
-          alert("Login successful!");
-          location.reload(); // ✅ refresh the page so it re-renders for the authenticated user
+  .then((userCredential) => {
+    const user = userCredential.user;
+    window.currentUser = user;
+    console.log("✅ Logged in:", user.email);
+    if (status) status.textContent = ""; // optional
+    // alert("Login successful!"); ❌ Removed
+    location.reload(); // ✅ Immediately loads CAAT tool
+  })
 
-        })
         .catch((error) => {
           console.error("❌ Login failed:", error.message);
           if (status) status.textContent = "";

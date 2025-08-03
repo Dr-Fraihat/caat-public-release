@@ -73,6 +73,47 @@ function addRow(tableId) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  firebase.auth().onAuthStateChanged((user) => {
+  window.currentUser = user;
+
+  const loginSection = document.getElementById("loginSection");
+  const protectedAppSection = document.getElementById("protectedAppSection");
+
+  if (user) {
+    const allowedAdmins = ["dr.fraihat@gmail.com"]; // ✅ Add admin/test email here
+
+    if (!allowedAdmins.includes(user.email)) {
+      // 🛑 Not admin — redirect to Stripe
+      fetch("https://caat-backend.onrender.com/create-checkout-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.url) {
+          window.location.href = data.url;
+        } else {
+          alert("❌ Failed to redirect to payment page.");
+        }
+      })
+      .catch((err) => {
+        console.error("Stripe error:", err);
+        alert("⚠️ Unable to redirect to payment.");
+      });
+
+      return; // ⛔ stop further access
+    }
+
+    // ✅ Admin access allowed
+    protectedAppSection.style.display = "block";
+    loginSection.style.display = "none";
+  } else {
+    // Not logged in
+    protectedAppSection.style.display = "none";
+    loginSection.style.display = "block";
+  }
+});
+
   const secondaryLangInput = document.getElementById("secondaryLanguages");
   const exposureWrapper = document.getElementById("languageExposureWrapper");
 

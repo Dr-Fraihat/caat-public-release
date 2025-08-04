@@ -1,5 +1,3 @@
-import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
-
 // ========== script.js ==========
 
 // Helper functions
@@ -143,20 +141,7 @@ document.addEventListener("DOMContentLoaded", () => {
       containers[index].classList.add("active");
     });
   });
- // ✅ Set the first tab and container as active (default)
-const firstVisibleTab = Array.from(tabs).find((tab) => {
-  const tabId = tab.getAttribute("data-tab");
-  return tabId && document.getElementById(tabId);
-});
-const firstVisibleContainer = Array.from(containers).find((container) => {
-  return firstVisibleTab && firstVisibleTab.getAttribute("data-tab") === container.id;
-});
-if (firstVisibleTab && firstVisibleContainer) {
-  firstVisibleTab.classList.add("active");
-  firstVisibleContainer.classList.add("active");
-}
- 
-});
+ });
 
 
   // ✅ Delivery mode logic
@@ -171,7 +156,18 @@ if (firstVisibleTab && firstVisibleContainer) {
 }); // ✅ Final closing of DOMContentLoaded
 
 
-  
+  const firstVisibleTab = Array.from(tabs).find((tab) => {
+  const tabId = tab.getAttribute("data-tab");
+  return document.getElementById(tabId);
+});
+const firstVisibleContainer = Array.from(containers).find((container) => {
+  return Array.from(tabs).some((tab) => tab.getAttribute("data-tab") === container.id);
+});
+if (firstVisibleTab && firstVisibleContainer) {
+  firstVisibleTab.classList.add("active");
+  firstVisibleContainer.classList.add("active");
+}
+
 });
 
 function showLoading() {

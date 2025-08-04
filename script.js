@@ -1,5 +1,3 @@
-import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
-
 // ========== script.js ==========
 
 // Helper functions

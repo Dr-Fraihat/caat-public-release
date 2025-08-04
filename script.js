@@ -3169,11 +3169,21 @@ document.getElementById("signupForm").addEventListener("submit", function(e) {
   const status = document.getElementById("signupStatus");
 
   firebase.auth().createUserWithEmailAndPassword(email, password)
-  .then((userCredential) => {
+  .then(async (userCredential) => {
     status.textContent = "✅ Account created successfully.";
     closeSignupModal();
 
-    // 🔁 Redirect to Stripe checkout
+    const user = userCredential.user;
+    const dbRef = doc(db, "users", user.uid);
+    const userDoc = await getDoc(dbRef);
+
+    if (userDoc.exists() && userDoc.data().isActive === true) {
+      // 🎉 Already active, skip Stripe
+      console.log("User is already active, skipping Stripe");
+      return;
+    }
+
+    // 💳 Not active: redirect to Stripe
     fetch("https://caat-backend.onrender.com/create-checkout-session", {
       method: "POST",
       headers: {
@@ -3188,6 +3198,7 @@ document.getElementById("signupForm").addEventListener("submit", function(e) {
         status.textContent = "❌ Failed to redirect to payment page.";
       }
     });
+
   })
   .catch((error) => {
     console.error(error);

@@ -2930,6 +2930,8 @@ try {
   hideLoading(); // ✅ Spinner always hides
 }
 }
+window.generateNarrativeReport = generateNarrativeReport;
+
 function safeGet(obj, key) {
   return obj?.[key] || "Not provided";
 }

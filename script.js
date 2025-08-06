@@ -153,7 +153,7 @@ document.addEventListener("DOMContentLoaded", () => {
       toggleDisplay("otherDeliveryWrapper", selected === "other");
     
   });
-}); // ✅ Final closing of DOMContentLoaded
+
 
 
   // ✅ Set default active tab for each tab group
@@ -206,6 +206,13 @@ const selectedDelivery = document.querySelector('input[name="deliveryMode"]:chec
 toggleDisplay("csectionReasonWrapper", selectedDelivery === "c-section");
 toggleDisplay("otherDeliveryWrapper", selectedDelivery === "other");
 
+// ✅ Marital status toggle (to show Household 2 and "Other" text box)
+const maritalSelect = document.getElementById("parentMaritalStatus");
+if (maritalSelect) {
+  maritalSelect.addEventListener("change", () => toggleHouseholdFields(maritalSelect));
+  toggleHouseholdFields(maritalSelect); // Run once on page load
+}
+});
 }); // End of DOMContentLoaded
 
 

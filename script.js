@@ -3280,7 +3280,7 @@ document.getElementById("resetForm").addEventListener("submit", function(e) {
     });
 });
 
-// ✅ Make sure these functions are available globally in module mode
+// Expose all necessary functions globally (must be last lines in script.js)
 window.generateNarrativeReport = generateNarrativeReport;
 window.generateFullIntakeReport = generateFullIntakeReport;
 window.openSignupModal = openSignupModal;
@@ -3290,3 +3290,6 @@ window.closeResetModal = closeResetModal;
 window.switchLanguage = switchLanguage;
 window.calculateAge = calculateAge;
 window.addRow = addRow;
+window.toggleDisplay = toggleDisplay;
+window.toggleOtherField = toggleOtherField;
+window.toggleHouseholdFields = toggleHouseholdFields;

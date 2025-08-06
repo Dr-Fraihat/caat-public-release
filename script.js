@@ -2931,6 +2931,8 @@ try {
 }
 }
 window.generateNarrativeReport = generateNarrativeReport;
+window.generateFullIntakeReport = generateFullIntakeReport;
+
 
 function safeGet(obj, key) {
   return obj?.[key] || "Not provided";

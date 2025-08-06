@@ -156,17 +156,59 @@ document.addEventListener("DOMContentLoaded", () => {
 }); // ✅ Final closing of DOMContentLoaded
 
 
+  // ✅ Set default active tab for each tab group
+document.querySelectorAll('.tab-container').forEach((tabGroup) => {
+  const tabs = tabGroup.querySelectorAll('.tab');
+  const tabIds = Array.from(tabs).map((t) => t.getAttribute('data-tab'));
+  const containers = tabIds.map((id) => document.getElementById(id)).filter(Boolean);
+
   const firstVisibleTab = Array.from(tabs).find((tab) => {
-  const tabId = tab.getAttribute("data-tab");
-  return document.getElementById(tabId);
-});
-const firstVisibleContainer = Array.from(containers).find((container) => {
-  return Array.from(tabs).some((tab) => tab.getAttribute("data-tab") === container.id);
-});
-if (firstVisibleTab && firstVisibleContainer) {
+    const tabId = tab.getAttribute('data-tab');
+    return document.getElementById(tabId);
+  });
+
+  const firstVisibleContainer = Array.from(containers).find((container) => {
+    return Array.from(tabs).some((tab) => tab.getAttribute('data-tab') === container.id);
+  });
+
+  if (firstVisibleTab && firstVisibleContainer) {
   firstVisibleTab.classList.add("active");
   firstVisibleContainer.classList.add("active");
 }
+
+// ✅ Yes/No toggle fields for "Other" answers
+document.querySelectorAll(".toggle-field").forEach(select => {
+  const targetId = select.getAttribute("data-toggle-target");
+  if (!targetId) return;
+  select.addEventListener("change", () => toggleOtherField(select, targetId));
+  toggleOtherField(select, targetId); // Run once on load
+});
+
+// ✅ Household Status toggle (married vs other)
+const householdSelect = document.getElementById("householdStatus");
+if (householdSelect) {
+  householdSelect.addEventListener("change", () => toggleHouseholdFields(householdSelect));
+  toggleHouseholdFields(householdSelect); // Run once on load
+}
+
+// ✅ Delivery method toggle
+const deliveryRadios = document.querySelectorAll('input[name="deliveryMode"]');
+deliveryRadios.forEach(radio => {
+  radio.addEventListener("change", () => {
+    const selected = document.querySelector('input[name="deliveryMode"]:checked')?.value;
+    toggleDisplay("csectionReasonWrapper", selected === "c-section");
+    toggleDisplay("otherDeliveryWrapper", selected === "other");
+  });
+});
+
+// Run toggle display on load in case already selected
+const selectedDelivery = document.querySelector('input[name="deliveryMode"]:checked')?.value;
+toggleDisplay("csectionReasonWrapper", selectedDelivery === "c-section");
+toggleDisplay("otherDeliveryWrapper", selectedDelivery === "other");
+
+}); // End of DOMContentLoaded
+
+
 
 });
 

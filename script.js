@@ -2932,6 +2932,10 @@ try {
 }
 window.generateNarrativeReport = generateNarrativeReport;
 window.generateFullIntakeReport = generateFullIntakeReport;
+window.openSignupModal = openSignupModal;
+window.closeSignupModal = closeSignupModal;
+window.openResetModal = openResetModal;
+window.closeResetModal = closeResetModal;
 
 
 function safeGet(obj, key) {

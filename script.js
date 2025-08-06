@@ -2930,12 +2930,6 @@ try {
   hideLoading(); // ✅ Spinner always hides
 }
 }
-window.generateNarrativeReport = generateNarrativeReport;
-window.generateFullIntakeReport = generateFullIntakeReport;
-window.openSignupModal = openSignupModal;
-window.closeSignupModal = closeSignupModal;
-window.openResetModal = openResetModal;
-window.closeResetModal = closeResetModal;
 
 
 function safeGet(obj, key) {
@@ -3236,3 +3230,14 @@ document.getElementById("resetForm").addEventListener("submit", function(e) {
       status.textContent = "❌ " + error.message;
     });
 });
+
+// ✅ Make sure these functions are available globally in module mode
+window.generateNarrativeReport = generateNarrativeReport;
+window.generateFullIntakeReport = generateFullIntakeReport;
+window.openSignupModal = openSignupModal;
+window.closeSignupModal = closeSignupModal;
+window.openResetModal = openResetModal;
+window.closeResetModal = closeResetModal;
+window.switchLanguage = switchLanguage;
+window.calculateAge = calculateAge;
+window.addRow = addRow;

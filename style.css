@@ -538,3 +538,19 @@ body.rtl .section-title {
   font-size: 16px;
   cursor: pointer;
 }
+.main-tab {
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  margin: 0 10px;
+  padding: 10px 25px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.main-tab.active {
+  background-color: #345feb;
+  color: white;
+}

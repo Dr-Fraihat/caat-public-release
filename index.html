@@ -70,6 +70,14 @@
 <img alt="AAC Logo" class="logo" src="https://i.postimg.cc/TPNDd6ZD/aac-logo.png"/>
 <h1>Comprehensive Autism Assessment Tool (CAAT)</h1>
 </div>
+<!-- 🌟 STEP 1: Top-Level Tabs for ADIR and Comprehensive -->
+<div id="mainTabSelector" style="display: flex; justify-content: center; margin-top: 30px;">
+  <button class="main-tab active" onclick="showMainTab('adir')" id="btnAdir">Autism Diagnostic Intake Report (ADIR)</button>
+  <button class="main-tab" onclick="showMainTab('comprehensive')" id="btnComprehensive">Comprehensive Assessment</button>
+</div>
+<!-- START ADIR SECTION -->
+<div id="adirTabs">
+
 <div class="tab-group-intake">
 <div class="section-title" data-translate="adirTitle">Autism Diagnostic Intake Report (ADIR)</div>
 <div class="tab-container">
@@ -1848,6 +1856,10 @@
     </form>
   </div>
 </div>
+</div> <!-- END ADIR SECTION -->
+<!-- START COMPREHENSIVE SECTION -->
+<div id="comprehensiveTabs" style="display: none;">
+
 <div class="tab-content" id="comprehensiveAssessment">
 <div class="tab-group-assessment">
   <div class="tab-group-title" data-translate="assessmentGroupTitle">Comprehensive Assessment</div>
@@ -1954,6 +1966,8 @@
 </div>
 </div>
 </div>
+</div> <!-- END COMPREHENSIVE SECTION -->
+
 <!-- Hidden container for PDF report -->
 <div id="intakeReportContainer" style="display:none;"></div>
 

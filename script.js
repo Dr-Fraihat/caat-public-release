@@ -3337,9 +3337,14 @@ function showMainTab(tabName) {
     btnAdir.classList.remove("active");
   }
 }
+// Fix: Hide active ADIR tab when switching to Comprehensive tab
 window.showMainTab = function (tabName) {
   const adirTabs = document.getElementById("adirTabs");
   const comprehensiveTabs = document.getElementById("comprehensiveTabs");
+
+  // 🧠 NEW: Hide any open ADIR subtabs (including Observation + Sign)
+  const adirSubTabGroups = document.querySelectorAll("#adirTabs .tab-content");
+  adirSubTabGroups.forEach(group => group.style.display = "none");
 
   if (tabName === "adir") {
     adirTabs.style.display = "block";
@@ -3347,14 +3352,11 @@ window.showMainTab = function (tabName) {
     document.getElementById("btnAdir").classList.add("active");
     document.getElementById("btnComprehensive").classList.remove("active");
   } else {
-    // Hide all ADIR tab content containers
-    const adirContainers = adirTabs.querySelectorAll(".container");
-    adirContainers.forEach(c => c.classList.remove("active"));
-
     adirTabs.style.display = "none";
     comprehensiveTabs.style.display = "block";
     document.getElementById("btnAdir").classList.remove("active");
     document.getElementById("btnComprehensive").classList.add("active");
   }
 };
+
 

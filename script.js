@@ -3337,14 +3337,9 @@ function showMainTab(tabName) {
     btnAdir.classList.remove("active");
   }
 }
-// Fix: Hide active ADIR tab when switching to Comprehensive tab
-window.showMainTab = function (tabName) {
+window.showMainTab = function(tabName) {
   const adirTabs = document.getElementById("adirTabs");
   const comprehensiveTabs = document.getElementById("comprehensiveTabs");
-
-  // 🧠 NEW: Hide any open ADIR subtabs (including Observation + Sign)
-  const adirSubTabGroups = document.querySelectorAll("#adirTabs .tab-content");
-  adirSubTabGroups.forEach(group => group.style.display = "none");
 
   if (tabName === "adir") {
     adirTabs.style.display = "block";
@@ -3358,5 +3353,6 @@ window.showMainTab = function (tabName) {
     document.getElementById("btnComprehensive").classList.add("active");
   }
 };
+
 
 

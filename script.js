@@ -3347,9 +3347,14 @@ window.showMainTab = function (tabName) {
     document.getElementById("btnAdir").classList.add("active");
     document.getElementById("btnComprehensive").classList.remove("active");
   } else {
+    // Hide all ADIR tab content containers
+    const adirContainers = adirTabs.querySelectorAll(".container");
+    adirContainers.forEach(c => c.classList.remove("active"));
+
     adirTabs.style.display = "none";
     comprehensiveTabs.style.display = "block";
     document.getElementById("btnAdir").classList.remove("active");
     document.getElementById("btnComprehensive").classList.add("active");
   }
 };
+

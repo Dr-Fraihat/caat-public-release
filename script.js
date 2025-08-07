@@ -213,6 +213,39 @@ if (maritalSelect) {
   toggleHouseholdFields(maritalSelect); // Run once on page load
 }
 });
+// ✅ Nested Tab Switching for Comprehensive Assessment
+const compContainer = document.getElementById("comprehensiveAssessment");
+if (compContainer) {
+  compContainer.querySelectorAll(".tab-container").forEach((tabGroup) => {
+    const tabs = tabGroup.querySelectorAll(".tab");
+    const tabIds = Array.from(tabs).map((t) => t.getAttribute("data-tab"));
+    const containers = tabIds.map((id) => document.getElementById(id)).filter(Boolean);
+
+    tabs.forEach((tab, index) => {
+      tab.addEventListener("click", () => {
+        tabs.forEach((t) => t.classList.remove("active"));
+        containers.forEach((c) => c.classList.remove("active"));
+
+        tab.classList.add("active");
+        containers[index].classList.add("active");
+      });
+    });
+
+    // Set default active tab for nested group
+    const firstTab = Array.from(tabs).find((tab) => {
+      const tabId = tab.getAttribute("data-tab");
+      return document.getElementById(tabId);
+    });
+    const firstContainer = Array.from(containers).find((container) => {
+      return Array.from(tabs).some((tab) => tab.getAttribute("data-tab") === container.id);
+    });
+    if (firstTab && firstContainer) {
+      firstTab.classList.add("active");
+      firstContainer.classList.add("active");
+    }
+  });
+}
+
 }); // End of DOMContentLoaded
 
 

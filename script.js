@@ -3340,19 +3340,54 @@ function showMainTab(tabName) {
 window.showMainTab = function(tabName) {
   const adirTabs = document.getElementById("adirTabs");
   const comprehensiveTabs = document.getElementById("comprehensiveTabs");
+  const signSubmit = document.getElementById("signSubmitReport");
+
+  // Hide all tab-content inside ADIR when switching away
+  document.querySelectorAll("#adirTabs .tab-content").forEach(el => el.classList.remove("active"));
+  document.querySelectorAll("#adirTabs .tab").forEach(el => el.classList.remove("active"));
+
+  // Also hide Sign & Submit section
+  if (signSubmit) signSubmit.style.display = "none";
 
   if (tabName === "adir") {
     adirTabs.style.display = "block";
     comprehensiveTabs.style.display = "none";
     document.getElementById("btnAdir").classList.add("active");
     document.getElementById("btnComprehensive").classList.remove("active");
+
+    // Show first ADIR tab again
+    const firstTab = adirTabs.querySelector(".tab");
+    const firstContentId = firstTab?.getAttribute("data-tab");
+    const firstContent = firstContentId && document.getElementById(firstContentId);
+    if (firstTab && firstContent) {
+      firstTab.classList.add("active");
+      firstContent.classList.add("active");
+    }
+
+    // Also show Sign & Submit section again
+    if (signSubmit) signSubmit.style.display = "block";
+
   } else {
     adirTabs.style.display = "none";
     comprehensiveTabs.style.display = "block";
     document.getElementById("btnAdir").classList.remove("active");
     document.getElementById("btnComprehensive").classList.add("active");
+
+    // Remove active from any previously active comprehensive tabs
+    document.querySelectorAll("#comprehensiveTabs .tab-content").forEach(el => el.classList.remove("active"));
+    document.querySelectorAll("#comprehensiveTabs .tab").forEach(el => el.classList.remove("active"));
+
+    // Show first Comprehensive tab
+    const firstTab = comprehensiveTabs.querySelector(".tab");
+    const firstContentId = firstTab?.getAttribute("data-tab");
+    const firstContent = firstContentId && document.getElementById(firstContentId);
+    if (firstTab && firstContent) {
+      firstTab.classList.add("active");
+      firstContent.classList.add("active");
+    }
   }
 };
+
 
 
 

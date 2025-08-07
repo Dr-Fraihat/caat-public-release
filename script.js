@@ -3337,17 +3337,16 @@ function showMainTab(tabName) {
     btnAdir.classList.remove("active");
   }
 }
-// Fix: Hide active ADIR tab when switching to Comprehensive tab
 window.showMainTab = function(tabName) {
   const adirTabs = document.getElementById("adirTabs");
   const comprehensiveTabs = document.getElementById("comprehensiveTabs");
   const signSubmit = document.getElementById("signSubmitReport");
 
-  // Hide all tab-content inside ADIR
+  // Hide all tab-content inside ADIR when switching away
   document.querySelectorAll("#adirTabs .tab-content").forEach(el => el.classList.remove("active"));
   document.querySelectorAll("#adirTabs .tab").forEach(el => el.classList.remove("active"));
 
-  // Hide Sign & Submit
+  // Also hide Sign & Submit section
   if (signSubmit) signSubmit.style.display = "none";
 
   if (tabName === "adir") {
@@ -3356,14 +3355,16 @@ window.showMainTab = function(tabName) {
     document.getElementById("btnAdir").classList.add("active");
     document.getElementById("btnComprehensive").classList.remove("active");
 
-    // Show first ADIR tab (hardcoded to "demographic" if exists)
-    const firstTab = document.querySelector('#adirTabs .tab[data-tab="demographic"]');
-    const firstContent = document.getElementById("demographic");
+    // Show first ADIR tab again
+    const firstTab = adirTabs.querySelector(".tab");
+    const firstContentId = firstTab?.getAttribute("data-tab");
+    const firstContent = firstContentId && document.getElementById(firstContentId);
     if (firstTab && firstContent) {
       firstTab.classList.add("active");
       firstContent.classList.add("active");
     }
 
+    // Also show Sign & Submit section again
     if (signSubmit) signSubmit.style.display = "block";
 
   } else {
@@ -3372,9 +3373,11 @@ window.showMainTab = function(tabName) {
     document.getElementById("btnAdir").classList.remove("active");
     document.getElementById("btnComprehensive").classList.add("active");
 
+    // Remove active from any previously active comprehensive tabs
     document.querySelectorAll("#comprehensiveTabs .tab-content").forEach(el => el.classList.remove("active"));
     document.querySelectorAll("#comprehensiveTabs .tab").forEach(el => el.classList.remove("active"));
 
+    // Show first Comprehensive tab
     const firstTab = comprehensiveTabs.querySelector(".tab");
     const firstContentId = firstTab?.getAttribute("data-tab");
     const firstContent = firstContentId && document.getElementById(firstContentId);
@@ -3384,7 +3387,6 @@ window.showMainTab = function(tabName) {
     }
   }
 };
-
 
 
 

@@ -3317,6 +3317,8 @@ window.addRow = addRow;
 window.toggleDisplay = toggleDisplay;
 window.toggleOtherField = toggleOtherField;
 window.toggleHouseholdFields = toggleHouseholdFields;
+window.showMainTab = showMainTab;
+
 function showMainTab(tabName) {
   const adir = document.getElementById("adirTabs");
   const comprehensive = document.getElementById("comprehensiveTabs");

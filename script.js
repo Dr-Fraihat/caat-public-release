@@ -3344,7 +3344,8 @@ window.showMainTab = function(tabName) {
   const signSubmit = document.getElementById("signSubmitReport");
 
   // Hide all tab-content inside ADIR
-  document.querySelectorAll("#adirTabs .tab-content").forEach(el => el.classList.remove("active"));
+  document.querySelectorAll("#adirTabs .tab-content, #observationNotes").forEach(el => el.classList.remove("active"));
+
   document.querySelectorAll("#adirTabs .tab").forEach(el => el.classList.remove("active"));
 
   // Hide Sign & Submit

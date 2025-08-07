@@ -3337,3 +3337,19 @@ function showMainTab(tabName) {
     btnAdir.classList.remove("active");
   }
 }
+window.showMainTab = function (tabName) {
+  const adirTabs = document.getElementById("adirTabs");
+  const comprehensiveTabs = document.getElementById("comprehensiveTabs");
+
+  if (tabName === "adir") {
+    adirTabs.style.display = "block";
+    comprehensiveTabs.style.display = "none";
+    document.getElementById("btnAdir").classList.add("active");
+    document.getElementById("btnComprehensive").classList.remove("active");
+  } else {
+    adirTabs.style.display = "none";
+    comprehensiveTabs.style.display = "block";
+    document.getElementById("btnAdir").classList.remove("active");
+    document.getElementById("btnComprehensive").classList.add("active");
+  }
+};

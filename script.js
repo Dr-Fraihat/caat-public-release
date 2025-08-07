@@ -144,15 +144,6 @@ document.addEventListener("DOMContentLoaded", () => {
  });
 
 
-  // ✅ Delivery mode logic
-  const deliveryRadios = document.querySelectorAll('input[name="deliveryMode"]');
-  deliveryRadios.forEach(radio => {
-    radio.addEventListener("change", () => {
-      const selected = document.querySelector('input[name="deliveryMode"]:checked')?.value;
-      toggleDisplay("csectionReasonWrapper", selected === "c-section");
-      toggleDisplay("otherDeliveryWrapper", selected === "other");
-    
-  });
 
 
 
@@ -250,7 +241,7 @@ if (compContainer) {
 
 
 
-});
+
 
 function showLoading() {
   document.getElementById("loadingOverlay").classList.remove("hidden");

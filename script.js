@@ -3343,12 +3343,16 @@ window.showMainTab = function(tabName) {
   const comprehensiveTabs = document.getElementById("comprehensiveTabs");
   const signSubmit = document.getElementById("signSubmitReport");
 
-  // Always hide Sign & Submit and clear all tab visibility
-  if (signSubmit) signSubmit.style.display = "none";
+  // Hide all tab-content inside ADIR
   document.querySelectorAll("#adirTabs .tab-content").forEach(el => el.classList.remove("active"));
   document.querySelectorAll("#adirTabs .tab").forEach(el => el.classList.remove("active"));
-  document.querySelectorAll("#comprehensiveTabs .tab-content").forEach(el => el.classList.remove("active"));
-  document.querySelectorAll("#comprehensiveTabs .tab").forEach(el => el.classList.remove("active"));
+
+  // Hide Observation Notes explicitly
+  const observation = document.getElementById("observationnotes");
+  if (observation) observation.classList.remove("active");
+
+  // Hide Sign & Submit
+  if (signSubmit) signSubmit.style.display = "none";
 
   if (tabName === "adir") {
     adirTabs.style.display = "block";
@@ -3356,7 +3360,7 @@ window.showMainTab = function(tabName) {
     document.getElementById("btnAdir").classList.add("active");
     document.getElementById("btnComprehensive").classList.remove("active");
 
-    // Show first ADIR tab
+    // Show first ADIR tab (hardcoded to "demographic" if exists)
     const firstTab = document.querySelector('#adirTabs .tab[data-tab="demographic"]');
     const firstContent = document.getElementById("demographic");
     if (firstTab && firstContent) {
@@ -3364,7 +3368,6 @@ window.showMainTab = function(tabName) {
       firstContent.classList.add("active");
     }
 
-    // ✅ Show Sign & Submit tab only on ADIR
     if (signSubmit) signSubmit.style.display = "block";
 
   } else {
@@ -3373,7 +3376,16 @@ window.showMainTab = function(tabName) {
     document.getElementById("btnAdir").classList.remove("active");
     document.getElementById("btnComprehensive").classList.add("active");
 
-    // Show first Comprehensive Assessment tab
+    // Hide any remaining ADIR tab-content and tabs again (reapply)
+    document.querySelectorAll("#adirTabs .tab-content").forEach(el => el.classList.remove("active"));
+    document.querySelectorAll("#adirTabs .tab").forEach(el => el.classList.remove("active"));
+
+    // Explicitly hide Observation Notes again
+    if (observation) observation.classList.remove("active");
+
+    // Reset Comprehensive to default tab
+    document.querySelectorAll("#comprehensiveTabs .tab-content").forEach(el => el.classList.remove("active"));
+    document.querySelectorAll("#comprehensiveTabs .tab").forEach(el => el.classList.remove("active"));
     const firstTab = comprehensiveTabs.querySelector(".tab");
     const firstContentId = firstTab?.getAttribute("data-tab");
     const firstContent = firstContentId && document.getElementById(firstContentId);
@@ -3383,6 +3395,7 @@ window.showMainTab = function(tabName) {
     }
   }
 };
+
 
 
 

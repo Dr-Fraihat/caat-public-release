@@ -7,20 +7,70 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- ========== Top-Level Tabs ========== -->
-<div class="top-level-tabs" style="text-align: center; margin: 20px;">
-  <div class="top-tab active" data-top-tab="adirTab" style="display: inline-block; margin-right: 10px; padding: 10px 20px; background: #007bff; color: white; border-radius: 8px; cursor: pointer;">
-    Autism Diagnostic Intake Report (ADIR)
+  <!-- This goes right after <body> -->
+<div id="loginSection" class="login-container">
+  <div class="login-box">
+    <img src="https://i.postimg.cc/TPNDd6ZD/aac-logo.png" alt="AAC Logo" class="login-logo"/>
+
+    <h2 class="login-title">CAAT Platform Login</h2>
+   <form id="loginForm">
+  <label for="email">Email</label>
+  <input id="email" name="email" type="email" placeholder="Enter your email" required/>
+
+  <label for="password">Password</label>
+  <input id="password" name="password" type="password" placeholder="Enter your password" required/>
+
+  <button type="submit">Login</button>
+
+  <!-- 🔽 New links go here -->
+  <div class="login-links">
+    <a href="#" onclick="openResetModal()" class="login-link">Forgot Password?</a>
+    <span>|</span>
+    <a href="#" onclick="openSignupModal()" class="login-link">Create Account</a>
   </div>
-  <div class="top-tab" data-top-tab="comprehensiveTab" style="display: inline-block; padding: 10px 20px; background: #6c757d; color: white; border-radius: 8px; cursor: pointer;">
-    Comprehensive Assessment
+</form>
+
+
+    <p class="disclaimer">
+      This platform is the intellectual property of the <strong>American Autism Council (AAC)</strong> and is intended for authorized use only. Unauthorized access, reproduction, modification, or distribution of any part of this system is strictly prohibited and may be subject to legal action under international copyright and intellectual property laws.
+      <br/><br/>
+      The Comprehensive Autism Assessment Tool (CAAT) was developed by <strong>Dr. Muhannad Fraihat, MD. MPH. HSCM.</strong> All rights reserved. © <span id="copyrightYear"></span> American Autism Council.
+    </p>
   </div>
 </div>
 
-<!-- Content Containers for Each Top-Level Tab -->
-<div id="adirTabContent" class="top-tab-content active">
-  <!-- You will move all ADIR (intake) tabs + sections here -->
-   <div class="tab-group-intake">
+
+<div id="protectedAppSection" style="display: none;">
+ <div style="text-align: right; padding: 10px 20px;">
+  <label for="languageSelect" style="font-weight: bold;">Select Language:</label>
+  <select id="languageSelect" onchange="switchLanguage(this.value)">
+  <option value="en">English</option>
+  <option value="ar">العربية (Arabic)</option>
+  <option value="zh">中文 (Mandarin Chinese)</option>
+  <option value="hi">हिन्दी (Hindi)</option>
+  <option value="es">Español (Spanish)</option>
+  <option value="fr">Français (French)</option>
+  <option value="bn">বাংলা (Bengali)</option>
+  <option value="ru">Русский (Russian)</option>
+  <option value="pt">Português (Portuguese)</option>
+  <option value="ur">اردو (Urdu)</option>
+  <option value="id">Bahasa Indonesia (Indonesian)</option>
+  <option value="de">Deutsch (German)</option>
+  <option value="ja">日本語 (Japanese)</option>
+  <option value="sw">Kiswahili (Swahili)</option>
+  <option value="mr">मराठी (Marathi)</option>
+  <option value="te">తెలుగు (Telugu)</option>
+  <option value="tr">Türkçe (Turkish)</option>
+  <option value="ta">தமிழ் (Tamil)</option>
+  <option value="vi">Tiếng Việt (Vietnamese)</option>
+  <option value="ko">한국어 (Korean)</option>
+</select>
+</div> 
+<div class="report-header">
+<img alt="AAC Logo" class="logo" src="https://i.postimg.cc/TPNDd6ZD/aac-logo.png"/>
+<h1>Comprehensive Autism Assessment Tool (CAAT)</h1>
+</div>
+<div class="tab-group-intake">
 <div class="section-title" data-translate="adirTitle">Autism Diagnostic Intake Report (ADIR)</div>
 <div class="tab-container">
   <div class="tab active" data-tab="demographic" data-translate="tabDemographic">Demographic Information</div>
@@ -1798,11 +1848,8 @@
     </form>
   </div>
 </div>
-</div>
-
-<div id="comprehensiveTabContent" class="top-tab-content" style="display:none;">
-  <!-- You will move all assessment tabs + sections here -->
-   <div class="tab-group-assessment">
+<div class="tab-content" id="comprehensiveAssessment">
+<div class="tab-group-assessment">
   <div class="tab-group-title" data-translate="assessmentGroupTitle">Comprehensive Assessment</div>
   <div class="tab-container">
     <div class="tab" data-tab="psychological" data-translate="tabPsychological">Psychological Assessment</div>
@@ -1907,73 +1954,6 @@
 </div>
 </div>
 </div>
-</div>
-
-  <!-- This goes right after <body> -->
-<div id="loginSection" class="login-container">
-  <div class="login-box">
-    <img src="https://i.postimg.cc/TPNDd6ZD/aac-logo.png" alt="AAC Logo" class="login-logo"/>
-
-    <h2 class="login-title">CAAT Platform Login</h2>
-   <form id="loginForm">
-  <label for="email">Email</label>
-  <input id="email" name="email" type="email" placeholder="Enter your email" required/>
-
-  <label for="password">Password</label>
-  <input id="password" name="password" type="password" placeholder="Enter your password" required/>
-
-  <button type="submit">Login</button>
-
-  <!-- 🔽 New links go here -->
-  <div class="login-links">
-    <a href="#" onclick="openResetModal()" class="login-link">Forgot Password?</a>
-    <span>|</span>
-    <a href="#" onclick="openSignupModal()" class="login-link">Create Account</a>
-  </div>
-</form>
-
-
-    <p class="disclaimer">
-      This platform is the intellectual property of the <strong>American Autism Council (AAC)</strong> and is intended for authorized use only. Unauthorized access, reproduction, modification, or distribution of any part of this system is strictly prohibited and may be subject to legal action under international copyright and intellectual property laws.
-      <br/><br/>
-      The Comprehensive Autism Assessment Tool (CAAT) was developed by <strong>Dr. Muhannad Fraihat, MD. MPH. HSCM.</strong> All rights reserved. © <span id="copyrightYear"></span> American Autism Council.
-    </p>
-  </div>
-</div>
-
-
-<div id="protectedAppSection" style="display: none;">
- <div style="text-align: right; padding: 10px 20px;">
-  <label for="languageSelect" style="font-weight: bold;">Select Language:</label>
-  <select id="languageSelect" onchange="switchLanguage(this.value)">
-  <option value="en">English</option>
-  <option value="ar">العربية (Arabic)</option>
-  <option value="zh">中文 (Mandarin Chinese)</option>
-  <option value="hi">हिन्दी (Hindi)</option>
-  <option value="es">Español (Spanish)</option>
-  <option value="fr">Français (French)</option>
-  <option value="bn">বাংলা (Bengali)</option>
-  <option value="ru">Русский (Russian)</option>
-  <option value="pt">Português (Portuguese)</option>
-  <option value="ur">اردو (Urdu)</option>
-  <option value="id">Bahasa Indonesia (Indonesian)</option>
-  <option value="de">Deutsch (German)</option>
-  <option value="ja">日本語 (Japanese)</option>
-  <option value="sw">Kiswahili (Swahili)</option>
-  <option value="mr">मराठी (Marathi)</option>
-  <option value="te">తెలుగు (Telugu)</option>
-  <option value="tr">Türkçe (Turkish)</option>
-  <option value="ta">தமிழ் (Tamil)</option>
-  <option value="vi">Tiếng Việt (Vietnamese)</option>
-  <option value="ko">한국어 (Korean)</option>
-</select>
-</div> 
-<div class="report-header">
-<img alt="AAC Logo" class="logo" src="https://i.postimg.cc/TPNDd6ZD/aac-logo.png"/>
-<h1>Comprehensive Autism Assessment Tool (CAAT)</h1>
-</div>
-
-
 <!-- Hidden container for PDF report -->
 <div id="intakeReportContainer" style="display:none;"></div>
 

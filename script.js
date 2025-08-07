@@ -3341,6 +3341,14 @@ function showMainTab(tabName) {
 window.showMainTab = function(tabName) {
   const adirTabs = document.getElementById("adirTabs");
   const comprehensiveTabs = document.getElementById("comprehensiveTabs");
+  const signSubmit = document.getElementById("signSubmitReport");
+
+  // Hide all tab-content inside ADIR
+  document.querySelectorAll("#adirTabs .tab-content").forEach(el => el.classList.remove("active"));
+  document.querySelectorAll("#adirTabs .tab").forEach(el => el.classList.remove("active"));
+
+  // Hide Sign & Submit
+  if (signSubmit) signSubmit.style.display = "none";
 
   if (tabName === "adir") {
     adirTabs.style.display = "block";
@@ -3348,15 +3356,15 @@ window.showMainTab = function(tabName) {
     document.getElementById("btnAdir").classList.add("active");
     document.getElementById("btnComprehensive").classList.remove("active");
 
-    // Activate first ADIR tab (Demographic)
+    // Show first ADIR tab (hardcoded to "demographic" if exists)
     const firstTab = document.querySelector('#adirTabs .tab[data-tab="demographic"]');
     const firstContent = document.getElementById("demographic");
     if (firstTab && firstContent) {
-      document.querySelectorAll('#adirTabs .tab').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('#adirTabs .tab-content').forEach(c => c.classList.remove('active'));
       firstTab.classList.add("active");
       firstContent.classList.add("active");
     }
+
+    if (signSubmit) signSubmit.style.display = "block";
 
   } else {
     adirTabs.style.display = "none";
@@ -3364,19 +3372,18 @@ window.showMainTab = function(tabName) {
     document.getElementById("btnAdir").classList.remove("active");
     document.getElementById("btnComprehensive").classList.add("active");
 
-    // Activate first Comprehensive tab
+    document.querySelectorAll("#comprehensiveTabs .tab-content").forEach(el => el.classList.remove("active"));
+    document.querySelectorAll("#comprehensiveTabs .tab").forEach(el => el.classList.remove("active"));
+
     const firstTab = comprehensiveTabs.querySelector(".tab");
     const firstContentId = firstTab?.getAttribute("data-tab");
     const firstContent = firstContentId && document.getElementById(firstContentId);
     if (firstTab && firstContent) {
-      document.querySelectorAll('#comprehensiveTabs .tab').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('#comprehensiveTabs .tab-content').forEach(c => c.classList.remove('active'));
       firstTab.classList.add("active");
       firstContent.classList.add("active");
     }
   }
 };
-
 
 
 

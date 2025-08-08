@@ -554,3 +554,6 @@ body.rtl .section-title {
   background-color: #345feb;
   color: white;
 }
+/* Comprehensive panels default hidden, show only when .active */
+#comprehensiveTabs .tab-content { display: none; }
+#comprehensiveTabs .tab-content.active { display: block; }

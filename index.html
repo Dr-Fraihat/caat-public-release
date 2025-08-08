@@ -1867,115 +1867,131 @@
 </div>
 </div> <!-- END ADIR SECTION -->
 <!-- START COMPREHENSIVE SECTION -->
+<!-- START COMPREHENSIVE SECTION -->
 <div id="comprehensiveTabs" style="display: none;">
 
-<div class="tab-content" id="comprehensiveAssessment">
-<div class="tab-group-assessment">
-  <div class="tab-group-title" data-translate="assessmentGroupTitle">Comprehensive Assessment</div>
-  <div class="tab-container">
-    <div class="tab" data-tab="psychological" data-translate="tabPsychological">Psychological Assessment</div>
-    <div class="tab" data-tab="occupational" data-translate="tabOccupational">Occupational Assessment</div>
-    <div class="tab" data-tab="speechLanguage" data-translate="tabSpeech">Speech and Language Assessment</div>
-    <div class="tab" data-tab="behavioral" data-translate="tabBehavioral">Applied Behavior Analysis Assessment</div>
-    <div class="tab" data-tab="specialEducation" data-translate="tabSpecialEducation">Special Education Assessment</div>
-    <div class="tab" data-tab="vocational" data-translate="tabVocational">Vocational Assessment</div>
-    <div class="tab" data-tab="signsubmit" data-translate="tabSignSubmit">Sign, Submit, and Generate Comprehensive Report</div>
+  <!-- Sub-tab buttons -->
+  <div class="tab-group-assessment">
+    <div class="tab-group-title" data-translate="assessmentGroupTitle">Comprehensive Assessment</div>
+    <div class="tab-container">
+      <div class="tab active" data-tab="psychological" data-translate="tabPsychological">Psychological Assessment</div>
+      <div class="tab" data-tab="occupational" data-translate="tabOccupational">Occupational Assessment</div>
+      <div class="tab" data-tab="speechLanguage" data-translate="tabSpeech">Speech and Language Assessment</div>
+      <div class="tab" data-tab="behavioral" data-translate="tabBehavioral">Applied Behavior Analysis Assessment</div>
+      <div class="tab" data-tab="specialEducation" data-translate="tabSpecialEducation">Special Education Assessment</div>
+      <div class="tab" data-tab="vocational" data-translate="tabVocational">Vocational Assessment</div>
+      <div class="tab" data-tab="signsubmit" data-translate="tabSignSubmit">Sign, Submit, and Generate Comprehensive Report</div>
+    </div>
   </div>
-</div>
-<!-- ========== PSYCHOLOGICAL (NEW TAB) ========== -->
-<div class="tab-content" id="psychological">
-<div class="form-section">
-<h2>Section 3: Psychological</h2>
-<p>(Future content goes here)</p>
-</div>
-</div>
-<!-- ========== OCCUPATIONAL (NEW TAB) ========== -->
-<div class="tab-content" id="occupational">
-<div class="form-section">
-<h2>Section 4: Occupational</h2>
-<p>(Future content goes here)</p>
-</div>
-</div>
-<!-- ========== SPEECH & LANGUAGE (NEW TAB) ========== -->
-<div class="tab-content" id="speechLanguage">
-<div class="form-section">
-<h2>Section 5: Speech &amp; Language</h2>
-<p>(Future content goes here)</p>
-</div>
-</div>
-<!-- ========== BEHAVIORAL (RENAMED TAB) ========== -->
-<div class="tab-content" id="behavioral">
-<div class="form-section">
-<h2>Section 6: Behavioral</h2>
-<form id="behavioralForm">
-<p>Problem Behaviors (check all that apply):</p>
-<label><input id="problemBehaviors[]" name="problemBehaviors[]" type="checkbox" value="aggression"/> Aggression Toward Others</label>
-<label style="display:block; margin-top:4px;">
-<input id="problemBehaviors[]" name="problemBehaviors[]" type="checkbox" value="selfInjury"/>
-          Self-Injurious Behavior
+
+  <!-- ========== PSYCHOLOGICAL (default active) ========== -->
+  <div class="tab-content active" id="psychological">
+    <div class="form-section">
+      <h2>Section 3: Psychological</h2>
+      <p>(Future content goes here)</p>
+    </div>
+  </div>
+
+  <!-- ========== OCCUPATIONAL ========== -->
+  <div class="tab-content" id="occupational">
+    <div class="form-section">
+      <h2>Section 4: Occupational</h2>
+      <p>(Future content goes here)</p>
+    </div>
+  </div>
+
+  <!-- ========== SPEECH & LANGUAGE ========== -->
+  <div class="tab-content" id="speechLanguage">
+    <div class="form-section">
+      <h2>Section 5: Speech &amp; Language</h2>
+      <p>(Future content goes here)</p>
+    </div>
+  </div>
+
+  <!-- ========== BEHAVIORAL ========== -->
+  <div class="tab-content" id="behavioral">
+    <div class="form-section">
+      <h2>Section 6: Behavioral</h2>
+      <form id="behavioralForm">
+        <p>Problem Behaviors (check all that apply):</p>
+        <label><input name="problemBehaviors[]" type="checkbox" value="aggression"/> Aggression Toward Others</label>
+        <label style="display:block; margin-top:4px;">
+          <input name="problemBehaviors[]" type="checkbox" value="selfInjury"/> Self-Injurious Behavior
         </label>
-<label style="display:block; margin-top:4px;">
-<input id="problemBehaviors[]" name="problemBehaviors[]" type="checkbox" value="difficultyTransitions"/>
-          Difficulty with Transitions
+        <label style="display:block; margin-top:4px;">
+          <input name="problemBehaviors[]" type="checkbox" value="difficultyTransitions"/> Difficulty with Transitions
         </label>
-<label for="behavioralConcerns" style="margin-top:10px;">Describe any behavioral concerns you have at this time:</label>
-<textarea id="behavioralConcerns" name="behavioralConcerns" rows="3"></textarea>
-<label for="makeFriendsEasy" style="margin-top:10px;">Does the patient make friends easily?</label>
-<select id="makeFriendsEasy" name="makeFriendsEasy">
-<option value="yes">Yes</option>
-<option value="no">No</option>
-</select>
-<label for="explainFriends" style="margin-top:4px;">If “No,” please explain:</label>
-<textarea id="explainFriends" name="explainFriends" rows="2"></textarea>
-<label for="socialConcerns" style="margin-top:10px;">Are there any concerns regarding the patient’s social skills or interests?</label>
-<select id="socialConcerns" name="socialConcerns">
-<option value="no">No</option>
-<option value="yes">Yes</option>
-</select>
-<label for="explainSocialConcerns" style="margin-top:4px;">If “Yes,” please explain:</label>
-<textarea id="explainSocialConcerns" name="explainSocialConcerns" rows="2"></textarea>
-<label for="abuseNeglect" style="margin-top:10px;">Has the patient been exposed to any form of abuse, neglect, or domestic violence?</label>
-<select id="abuseNeglect" name="abuseNeglect">
-<option value="no">No</option>
-<option value="yes">Yes</option>
-</select>
-<label for="explainAbuse" style="margin-top:4px;">If “Yes,” please explain:</label>
-<textarea id="explainAbuse" name="explainAbuse" rows="2"></textarea>
-<label for="recentStressors" style="margin-top:10px;">Has the patient experienced any recent significant stressors (e.g., moves, losses)?</label>
-<select id="recentStressors" name="recentStressors">
-<option value="no">No</option>
-<option value="yes">Yes</option>
-</select>
-<label for="explainStressors" style="margin-top:4px;">If “Yes,” please explain:</label>
-<textarea id="explainStressors" name="explainStressors" rows="2"></textarea>
-</form>
+        <label for="behavioralConcerns" style="margin-top:10px;">Describe any behavioral concerns you have at this time:</label>
+        <textarea id="behavioralConcerns" name="behavioralConcerns" rows="3"></textarea>
+
+        <label for="makeFriendsEasy" style="margin-top:10px;">Does the patient make friends easily?</label>
+        <select id="makeFriendsEasy" name="makeFriendsEasy">
+          <option value="yes">Yes</option>
+          <option value="no">No</option>
+        </select>
+
+        <label for="explainFriends" style="margin-top:4px;">If “No,” please explain:</label>
+        <textarea id="explainFriends" name="explainFriends" rows="2"></textarea>
+
+        <label for="socialConcerns" style="margin-top:10px;">Are there any concerns regarding the patient’s social skills or interests?</label>
+        <select id="socialConcerns" name="socialConcerns">
+          <option value="no">No</option>
+          <option value="yes">Yes</option>
+        </select>
+
+        <label for="explainSocialConcerns" style="margin-top:4px;">If “Yes,” please explain:</label>
+        <textarea id="explainSocialConcerns" name="explainSocialConcerns" rows="2"></textarea>
+
+        <label for="abuseNeglect" style="margin-top:10px;">Has the patient been exposed to any form of abuse, neglect, or domestic violence?</label>
+        <select id="abuseNeglect" name="abuseNeglect">
+          <option value="no">No</option>
+          <option value="yes">Yes</option>
+        </select>
+
+        <label for="explainAbuse" style="margin-top:4px;">If “Yes,” please explain:</label>
+        <textarea id="explainAbuse" name="explainAbuse" rows="2"></textarea>
+
+        <label for="recentStressors" style="margin-top:10px;">Has the patient experienced any recent significant stressors (e.g., moves, losses)?</label>
+        <select id="recentStressors" name="recentStressors">
+          <option value="no">No</option>
+          <option value="yes">Yes</option>
+        </select>
+
+        <label for="explainStressors" style="margin-top:4px;">If “Yes,” please explain:</label>
+        <textarea id="explainStressors" name="explainStressors" rows="2"></textarea>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========== SPECIAL EDUCATION ========== -->
+  <div class="tab-content" id="specialEducation">
+    <div class="form-section">
+      <h2>Section 7: Special Education</h2>
+      <p>(Future content goes here)</p>
+    </div>
+  </div>
+
+  <!-- ========== VOCATIONAL ========== -->
+  <div class="tab-content" id="vocational">
+    <div class="form-section">
+      <h2>Section 8: Vocational</h2>
+      <p>(Future content goes here)</p>
+    </div>
+  </div>
+
+  <!-- ========== SIGN AND SUBMIT ========== -->
+  <div class="tab-content" id="signsubmit">
+    <div class="form-section">
+      <h2>Section 10: Sign and Submit</h2>
+      <form id="signSubmitForm">
+        <p>You can add signature fields, disclaimers, or final submission instructions here.</p>
+      </form>
+    </div>
+  </div>
+
 </div>
-</div>
-<!-- ========== SPECIAL EDUCATION (NEW TAB) ========== -->
-<div class="tab-content" id="specialEducation">
-<div class="form-section">
-<h2>Section 7: Special Education</h2>
-<p>(Future content goes here)</p>
-</div>
-</div>
-<!-- ========== VOCATIONAL (NEW TAB) ========== -->
-<div class="tab-content" id="vocational">
-<div class="form-section">
-<h2>Section 8: Vocational</h2>
-<p>(Future content goes here)</p>
-</div>
-</div>
-<!-- ========== SIGN AND SUBMIT (LAST TAB) ========== -->
-<div class="tab-content" id="signsubmit">
-<div class="form-section">
-<h2>Section 10: Sign and Submit</h2>
-<form id="signSubmitForm">
-<p>You can add signature fields, disclaimers, or final submission instructions here.</p>
-</form>
-</div>
-</div>
-</div>
-</div> <!-- END COMPREHENSIVE SECTION -->
+<!-- END COMPREHENSIVE SECTION -->
+
 
 <!-- Hidden container for PDF report -->
 <div id="intakeReportContainer" style="display:none;"></div>

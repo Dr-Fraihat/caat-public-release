@@ -70,6 +70,19 @@
 <img alt="AAC Logo" class="logo" src="https://i.postimg.cc/TPNDd6ZD/aac-logo.png"/>
 <h1>Comprehensive Autism Assessment Tool (CAAT)</h1>
 </div>
+
+
+<!-- START ADIR SECTION -->
+ <!-- Top-level Tabs -->
+<div id="mainTabSelector" style="text-align: center; margin-bottom: 20px;">
+  <button id="btnAdir" class="main-tab active" onclick="showMainTab('adir')">Autism Diagnostic Intake Report (ADIR)</button>
+  <button id="btnComprehensive" class="main-tab" onclick="showMainTab('comprehensive')">Comprehensive Assessment</button>
+</div>
+
+
+<div id="adirTabs" style="display: block;">
+
+
 <div class="tab-group-intake">
 <div class="section-title" data-translate="adirTitle">Autism Diagnostic Intake Report (ADIR)</div>
 <div class="tab-container">
@@ -77,7 +90,6 @@
   <div class="tab" data-tab="history" data-translate="tabBackground">Background and History</div>
   <div class="tab" data-tab="observationNotes" data-translate="tabObservation">Observation Notes</div>
   <div class="tab" data-tab="signSubmitReport" data-translate="tabGenerateADIR">Sign, Submit, and Generate Intake Report</div>
-  <div class="tab" data-tab="comprehensiveAssessment" data-translate="tabComprehensive">Comprehensive Assessment</div>
 </div>
 </div>
 
@@ -1499,7 +1511,7 @@
 </div>
 </div>
 <!-- ========== (NEW) OBSERVATION NOTES TAB ========== -->
-<div class="container" id="observationNotes">
+<div id="observationnotes" class="tab-content">
 <div class="form-section">
 <h2 data-translate="obsHeader">Observation Notes</h2>
 <form id="observationNotesForm">
@@ -1788,6 +1800,8 @@
 </form>
 </div>
 </div>
+
+
 <!-- ========== Sign, Submit, and Generate Intake Report Section ========== -->
 <div class="container" id="signSubmitReport">
   <div class="form-section">
@@ -1848,6 +1862,15 @@
     </form>
   </div>
 </div>
+</div> <!-- END ADIR SECTION -->
+
+
+
+
+
+<!-- START COMPREHENSIVE SECTION -->
+<div id="comprehensiveTabs" style="display: none;">
+
 <div class="tab-content" id="comprehensiveAssessment">
 <div class="tab-group-assessment">
   <div class="tab-group-title" data-translate="assessmentGroupTitle">Comprehensive Assessment</div>
@@ -1954,6 +1977,8 @@
 </div>
 </div>
 </div>
+</div> <!-- END COMPREHENSIVE SECTION -->
+
 <!-- Hidden container for PDF report -->
 <div id="intakeReportContainer" style="display:none;"></div>
 

@@ -3317,3 +3317,21 @@ window.addRow = addRow;
 window.toggleDisplay = toggleDisplay;
 window.toggleOtherField = toggleOtherField;
 window.toggleHouseholdFields = toggleHouseholdFields;
+function showMainTab(tabName) {
+  const adir = document.getElementById("adirTabs");
+  const comprehensive = document.getElementById("comprehensiveTabs");
+  const btnAdir = document.getElementById("btnAdir");
+  const btnComprehensive = document.getElementById("btnComprehensive");
+
+  if (tabName === "adir") {
+    adir.style.display = "block";
+    comprehensive.style.display = "none";
+    btnAdir.classList.add("active");
+    btnComprehensive.classList.remove("active");
+  } else {
+    adir.style.display = "none";
+    comprehensive.style.display = "block";
+    btnComprehensive.classList.add("active");
+    btnAdir.classList.remove("active");
+  }
+}

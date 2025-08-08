@@ -3337,3 +3337,63 @@ function showMainTab(tabName) {
     btnAdir.classList.remove("active");
   }
 }
+// Fix: Hide active ADIR tab when switching to Comprehensive tab
+window.showMainTab = function(tabName) {
+  const adirTabs = document.getElementById("adirTabs");
+  const comprehensiveTabs = document.getElementById("comprehensiveTabs");
+  const signSubmit = document.getElementById("signSubmitReport");
+
+  // Hide all tab-content inside ADIR
+  document.querySelectorAll("#adirTabs .tab-content").forEach(el => el.classList.remove("active"));
+  document.querySelectorAll("#adirTabs .tab").forEach(el => el.classList.remove("active"));
+
+  // Hide Observation Notes explicitly
+  const observation = document.getElementById("observationnotes");
+  if (observation) observation.classList.remove("active");
+
+  // Hide Sign & Submit
+  if (signSubmit) signSubmit.style.display = "none";
+
+  if (tabName === "adir") {
+    adirTabs.style.display = "block";
+    comprehensiveTabs.style.display = "none";
+    document.getElementById("btnAdir").classList.add("active");
+    document.getElementById("btnComprehensive").classList.remove("active");
+
+    // Show first ADIR tab (hardcoded to "demographic" if exists)
+    const firstTab = document.querySelector('#adirTabs .tab[data-tab="demographic"]');
+    const firstContent = document.getElementById("demographic");
+    if (firstTab && firstContent) {
+      firstTab.classList.add("active");
+      firstContent.classList.add("active");
+    }
+
+    if (signSubmit) signSubmit.style.display = "block";
+
+  } else {
+    adirTabs.style.display = "none";
+    comprehensiveTabs.style.display = "block";
+    document.getElementById("btnAdir").classList.remove("active");
+    document.getElementById("btnComprehensive").classList.add("active");
+
+    // Hide any remaining ADIR tab-content and tabs again (reapply)
+    document.querySelectorAll("#adirTabs .tab-content").forEach(el => el.classList.remove("active"));
+    document.querySelectorAll("#adirTabs .tab").forEach(el => el.classList.remove("active"));
+
+    // Explicitly hide Observation Notes again
+    if (observation) observation.classList.remove("active");
+
+    // Reset Comprehensive to default tab
+    document.querySelectorAll("#comprehensiveTabs .tab-content").forEach(el => el.classList.remove("active"));
+    document.querySelectorAll("#comprehensiveTabs .tab").forEach(el => el.classList.remove("active"));
+    const firstTab = comprehensiveTabs.querySelector(".tab");
+    const firstContentId = firstTab?.getAttribute("data-tab");
+    const firstContent = firstContentId && document.getElementById(firstContentId);
+    if (firstTab && firstContent) {
+      firstTab.classList.add("active");
+      firstContent.classList.add("active");
+    }
+  }
+};
+
+

@@ -557,3 +557,6 @@ body.rtl .section-title {
 /* Comprehensive panels default hidden, show only when .active */
 #comprehensiveTabs .tab-content { display: none; }
 #comprehensiveTabs .tab-content.active { display: block; }
+/* Tabs: hide all containers by default; show only the active one */
+.container { display: none; }
+.container.active { display: block; }

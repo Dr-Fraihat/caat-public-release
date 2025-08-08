@@ -2820,16 +2820,18 @@ function evaluateDSM5(data) {
 async function generateNarrativeReport() {
   showLoading();
 
+  // Always regenerate intake data before AI step
+  generateFullIntakeReport();
+
   const data = window.generatedReportData;
   if (!data) {
-    alert("Please generate the full intake report first.");
+    alert("Something went wrong. Could not generate report data.");
+    hideLoading();
     return;
   }
 
- const selectedLang = document.getElementById("reportLanguage").value;
- const isArabic = selectedLang === "ar";
-
-const selectedLangs = [selectedLang];
+  const selectedLang = document.getElementById("reportLanguage").value;
+  const selectedLangs = [selectedLang];
 
 try {
   const response = await fetch("https://caat-backend.onrender.com/generate-report", {
@@ -3307,6 +3309,7 @@ document.getElementById("resetForm").addEventListener("submit", function(e) {
 // Expose all necessary functions globally (must be last lines in script.js)
 window.generateNarrativeReport = generateNarrativeReport;
 window.generateFullIntakeReport = generateFullIntakeReport;
+window.generateAIReportDirect = generateAIReportDirect;
 window.openSignupModal = openSignupModal;
 window.closeSignupModal = closeSignupModal;
 window.openResetModal = openResetModal;

@@ -1641,11 +1641,13 @@ if (langLabel) langLabel.textContent = translations[lang].selectLanguage;
 
 function generateFullIntakeReport() {
   const container = document.getElementById("intakeReportContainer");
-if (!container) {
-  alert("Report container not found!");
-  return;
-}
-let doc = "";
+  if (!container) {
+    alert("Report container not found!");
+    return;
+  }
+  container.style.display = "block";  // ✅ make it visible
+  let doc = "";
+
 
   const get = (id) => document.getElementById(id)?.value.trim() || "";
   const today = new Date().toLocaleDateString();

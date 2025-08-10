@@ -3398,17 +3398,19 @@ window.showMainTab = function(tabName) {
     }
   }
 };
-// === Bind the AI button (module safe) ===
+// === Bind the AI button (module-safe) ===
 document.addEventListener("DOMContentLoaded", () => {
   const aiBtn = document.getElementById("generateAiBtn");
   if (aiBtn) {
-    aiBtn.addEventListener("click", () => {
-      // Always prepare the full intake report before AI step
+    aiBtn.addEventListener("click", async (e) => {
+      e.preventDefault();           // stop form submit/reload
+      showLoading();
       generateFullIntakeReport();
-      generateAIReportDirect();
+      await generateAIReportDirect();
     });
   }
 });
+
 
 
 

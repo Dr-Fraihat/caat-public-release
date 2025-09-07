@@ -2242,10 +2242,13 @@ let reportData = {
     obs_cooperation_attention,
     obs_strengths,
     obs_concerns
-  }
+  },
+  // === NEW: OT Core (Unified) ===
+  otCore: (window.__OTCore_collect ? window.__OTCore_collect() : null)
 };
 
 window.generatedReportData = reportData;
+
   doc += `
   <div id="generatedReport" style="padding: 40px; font-family: Arial, sans-serif;">
     <style>
@@ -3411,7 +3414,526 @@ document.addEventListener("DOMContentLoaded", () => {
       await generateAIReportDirect();
     });
   }
+    // === OT CORE INIT (ADD THIS) ===
+  const otCoreHost = document.getElementById('ot-core-form');
+  if (otCoreHost && window.__OTCore_init) {
+    window.__OTCore_init();
+  }
+  // === OT ONLY: bind the page button ===
+  const otBtn = document.getElementById('generateOTBtn');
+  if (otBtn) {
+    otBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      showLoading();
+      await generateOTNarrativeDirect();   // defined at file end in Step 4A #3
+    });
+  }
+  // === Expanded OT sections (COPM + GAS etc.) ===
+  if (window.__OTX_init) {
+    window.__OTX_init();
+  }
+
 });
+/* ======================= CAAT-OT CORE (Unified Form) ======================= */
+(function(){
+
+  // 0–4 scale used across domains
+  const SCALE = [
+    { v: 0, label: "Never" },
+    { v: 1, label: "Rarely" },
+    { v: 2, label: "Sometimes" },
+    { v: 3, label: "Often" },
+    { v: 4, label: "Always" }
+  ];
+
+  // Domain lists (v1). Each subdomain gets a single 0–4 rating + notes.
+  const OTCORE = {
+    Sensory: ["Auditory","Visual","Tactile","Vestibular","Proprioception","Oral","Interoception"],
+    "Motor – Fine": ["Grasp/Release","In-hand Manipulation","Bilateral Coordination","Visual Motor / Handwriting"],
+    "Motor – Gross": ["Postural Control","Balance","Praxis","Strength/Endurance"],
+    "ADL/Participation": ["Feeding","Dressing (Upper)","Dressing (Lower)","Toileting","Grooming/Hygiene","Bathing/Showering","Sleep","Play/Leisure","School/Participation"],
+    "Adaptive Behavior": ["Communication","Daily Living","Socialization"]
+  };
+
+  // Safe accessors
+  function getCase(){ return (typeof getCurrentCaseDoc === 'function')
+      ? getCurrentCaseDoc()
+      : (window.__CURRENT_CASE__ = (window.__CURRENT_CASE__ || {})); }
+  function ensureOTA(){ const c = getCase(); c.otAssessment = c.otAssessment || {}; return c.otAssessment; }
+  function $(id){ return document.getElementById(id); }
+  function el(html){ const d=document.createElement('div'); d.innerHTML=html.trim(); return d.firstChild; }
+  function escapeHTML(s){ return (s??"").toString().replace(/[&<>"']/g,m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])); }
+
+  // Renders one section (table of subdomains)
+  function section(label, subs, key){
+    const rows = subs.map(sub=>{
+      const id = `otc_${key}_${sub}`.replace(/[^\w]/g,'_');
+      const opts = SCALE.map(o=>`<option value="${o.v}">${o.label}</option>`).join('');
+      return `<tr>
+        <td>${sub}</td>
+        <td>
+          <select class="otcore-rate" id="${id}" data-group="${key}" data-sub="${sub}">
+            <option value="" selected>--</option>${opts}
+          </select>
+        </td>
+        <td><input class="otcore-notes" data-for="${id}" placeholder="Notes"></td>
+      </tr>`;
+    }).join('');
+    return `
+      <div class="card p-12 mb-12">
+        <h4>${label}</h4>
+        <table class="table">
+          <thead><tr><th>Domain</th><th>Rating</th><th>Notes</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+  }
+
+  function renderOTCoreForm(){
+    const host = $('ot-core-form');
+    if(!host) return;
+
+    host.innerHTML = [
+      section('Sensory Processing', OTCORE['Sensory'], 'Sensory'),
+      section('Motor — Fine', OTCORE['Motor – Fine'], 'Motor_Fine'),
+      section('Motor — Gross', OTCORE['Motor – Gross'], 'Motor_Gross'),
+      section('ADL / Participation', OTCORE['ADL/Participation'], 'ADL'),
+      section('Adaptive Behavior', OTCORE['Adaptive Behavior'], 'Adaptive')
+    ].join('');
+
+    // Controls + Results
+    const controls = el(`<div class="mt-8">
+      <button class="btn primary" id="ot-core-compute">Compute & Save</button>
+    </div>`);
+    host.appendChild(controls);
+
+    const res = el(`<div id="ot-core-results" class="mt-12"></div>`);
+    host.appendChild(res);
+
+    $('ot-core-compute').addEventListener('click', computeAndSave);
+  }
+
+  // Compute indices (0–100) and severity labels
+  function computeAndSave(){
+    const selects = Array.from(document.querySelectorAll('.otcore-rate'));
+    const noteMap = Array.from(document.querySelectorAll('.otcore-notes'))
+      .reduce((acc,el)=>{ acc[el.dataset.for]=el.value.trim(); return acc; },{});
+
+    const groups = {};
+    const agg = {}; // { group: {sum, n} }
+
+    selects.forEach(sel=>{
+      const g = sel.dataset.group;
+      const sub = sel.dataset.sub;
+      const v = sel.value === "" ? null : Number(sel.value);
+      groups[g] = groups[g] || {};
+      groups[g][sub] = { raw: v, notes: noteMap[sel.id] || "" };
+      if(v!=null){
+        agg[g] = agg[g] || { sum:0, n:0 };
+        agg[g].sum += v;
+        agg[g].n += 1;
+      }
+    });
+
+    const results = {};
+    Object.keys(groups).forEach(g=>{
+      const n = agg[g]?.n || 0;
+      const sum = agg[g]?.sum || 0;
+      const avg = n ? (sum / n) : null;           // 0–4
+      const index = avg!=null ? Math.round(avg * 25) : null; // 0–100
+      results[g] = {
+        subdomains: groups[g],
+        average: avg,
+        index,
+        severity: classify(index)
+      };
+    });
+
+    // Save into case document
+    const ota = ensureOTA();
+    ota.otCore = results;
+
+    paintResults(results);
+
+    if(typeof toast === 'function') toast('OT Core scores computed & saved.');
+    else console.log('[OTCore] saved', results);
+  }
+
+  function classify(index){
+    if(index==null) return "";
+    if(index >= 75) return "Typical";
+    if(index >= 60) return "Mild Difficulty";
+    if(index >= 40) return "Moderate Difficulty";
+    return "Severe Difficulty";
+  }
+
+  function paintResults(results){
+    const host = $('ot-core-results');
+    if(!host) return;
+    const cards = Object.entries(results).map(([g,v])=>{
+      const subs = Object.entries(v.subdomains).map(([sub,info])=>{
+        const val = (info.raw==null) ? "--" : info.raw;
+        return `<li>${escapeHTML(sub)}: ${val}${info.notes? " — "+escapeHTML(info.notes):""}</li>`;
+      }).join('');
+      const badge = v.index!=null ? `${v.index} (${v.severity})` : "—";
+      return `<div class="card p-8 mb-8">
+        <div><b>${escapeHTML(g.replace(/_/g,' '))}</b> — Index: ${badge}</div>
+        <ul>${subs}</ul>
+      </div>`;
+    }).join('');
+    host.innerHTML = cards || "<p class='muted'>No ratings yet.</p>";
+  }
+  // Collect results without painting/saving (for AI payload)
+  window.__OTCore_collect = function(){
+    const selects = Array.from(document.querySelectorAll('.otcore-rate'));
+    const noteMap = Array.from(document.querySelectorAll('.otcore-notes'))
+      .reduce((acc,el)=>{ acc[el.dataset.for]=el.value.trim(); return acc; },{});
+
+    const groups = {};
+    const agg = {};
+    selects.forEach(sel=>{
+      const g = sel.dataset.group;
+      const sub = sel.dataset.sub;
+      const v = sel.value === "" ? null : Number(sel.value);
+      groups[g] = groups[g] || {};
+      groups[g][sub] = { raw: v, notes: noteMap[sel.id] || "" };
+      if(v!=null){
+        agg[g] = agg[g] || { sum:0, n:0 };
+        agg[g].sum += v;
+        agg[g].n += 1;
+      }
+    });
+
+    const results = {};
+    Object.keys(groups).forEach(g=>{
+      const n = agg[g]?.n || 0;
+      const sum = agg[g]?.sum || 0;
+      const avg = n ? (sum / n) : null;                 // 0–4
+      const index = avg!=null ? Math.round(avg * 25) : null;  // 0–100
+      results[g] = {
+        subdomains: groups[g],
+        average: avg,
+        index,
+        severity: (function(i){
+          if(i==null) return "";
+          if(i >= 75) return "Typical";
+          if(i >= 60) return "Mild Difficulty";
+          if(i >= 40) return "Moderate Difficulty";
+          return "Severe Difficulty";
+        })(index)
+      };
+    });
+
+    return results;
+  };
+
+  // public init
+  window.__OTCore_init = function(){
+    if(document.getElementById('ot-core-form')){
+      renderOTCoreForm();
+    }
+  };
+
+})();
+/* ======================= OT Narrative (independent) ======================= */
+
+// Helper getters
+function _textVal(id){ const el = document.getElementById(id); return el ? el.value.trim() : ""; }
+function _checkedVals(name){
+  return Array.from(document.querySelectorAll(`input[name="${name}"]:checked`)).map(el => el.value);
+}
+function _radioVal(name){
+  const el = document.querySelector(`input[name="${name}"]:checked`);
+  return el ? el.value : "";
+}
+
+// Build a self-contained OT payload (no ADIR required)
+function buildOTNarrativeData(){
+  // Try include demographics if available (safe fallback to null)
+  const maybeClient =
+    (window.generatedReportData && (window.generatedReportData.client || window.generatedReportData.clientInfo))
+    || null;
+
+  // Unified OT Core indices
+  const otCore = (window.__OTCore_collect ? window.__OTCore_collect() : null);
+
+  // Caregiver interview / environments
+  const envs = _checkedVals("ot_env[]");
+  const supports = _checkedVals("ot_supports[]");
+  const goalDomains = _checkedVals("ot_goals[]");
+
+  // Expanded sections (from CAAT-OT Expanded)
+  const expanded = (window.__OTX_collect ? window.__OTX_collect() : null);
+
+  // Clinical observations radios
+  const obs = {
+    attention:  (document.querySelector('input[name="ot_obs_attention"]:checked')?.value || ""),
+    transitions:(document.querySelector('input[name="ot_obs_transitions"]:checked')?.value || ""),
+    imitation:  (document.querySelector('input[name="ot_obs_imitation"]:checked')?.value || ""),
+    bilateral:  (document.querySelector('input[name="ot_obs_bilateral"]:checked')?.value || ""),
+    oneStep:    (document.querySelector('input[name="ot_obs_1step"]:checked')?.value || ""),
+    twoStep:    (document.querySelector('input[name="ot_obs_2step"]:checked')?.value || ""),
+    notes: _textVal("ot_obs_notes")
+  };
+
+  // Plan
+  const plan = {
+    frequencyPerWeek: _textVal("ot_freq_per_week"),
+    minutesPerSession: _textVal("ot_minutes_per_session"),
+    setting: _textVal("ot_setting"),
+    supportsSelected: supports,
+    supportsNotes: _textVal("ot_supports_notes")
+  };
+
+  // Summary / strengths / barriers
+  const summary = _textVal("ot_summary");
+  const strengths = _textVal("ot_strengths").split("\n").map(s=>s.trim()).filter(Boolean);
+  const barriers  = _textVal("ot_barriers").split("\n").map(s=>s.trim()).filter(Boolean);
+
+  // Final payload (independent OT)
+  const payload = {
+    meta: { reportType: "OT", module: "CAAT-OT v1" },
+    client: maybeClient,
+    caregiverInterview: {
+      primaryConcerns: _textVal("ot_primaryConcerns"),
+      environments: envs,
+      caregiverNotes: _textVal("ot_caregiverNotes")
+    },
+    profile:     expanded?.profile     || null,   // routines
+    feeding:     expanded?.feeding     || null,   // feeding/oral
+    executive:   expanded?.executive   || null,   // exec/self-reg
+    handwriting: expanded?.handwriting || null,   // handwriting/school
+    safety:      expanded?.safety      || null,   // risk/safety
+    copm:        expanded?.copm        || [],     // COPM priorities
+    gas:         expanded?.gas         || [],     // GAS goals
+    otCore,                                        // unified indices (Sensory, Motor Fine/Gross, ADL, Adaptive)
+    clinicalObservations: obs,
+    strengths,
+    barriers,
+    goalsRequested: goalDomains,
+    plan,
+    summary
+  };
+
+  return payload;
+}
+
+
+// Call your existing AI generator but with OT-only data
+async function generateOTNarrativeDirect(){
+  // Put OT payload where your generator already reads from
+  window.generatedReportData = buildOTNarrativeData();
+
+  // Reuse your existing function (same pipeline, OT-specific payload)
+  // If your generator supports a template key, you can pass it here; otherwise it will
+  // infer from payload.meta.reportType === 'OT'.
+  await generateAIReportDirect();
+
+  // If you have a hideLoading() call, add it here
+  if (typeof hideLoading === "function") hideLoading();
+}
+/* ======================= CAAT-OT Expanded (COPM + GAS + collectors) ======================= */
+(function(){
+
+  // Helpers (reuse your existing ones if present)
+  function $(id){ return document.getElementById(id); }
+  function _textVal(id){ const el = document.getElementById(id); return el ? el.value.trim() : ""; }
+  function _checkedVals(name){ return Array.from(document.querySelectorAll(`input[name="${name}"]:checked`)).map(el => el.value); }
+
+  // ---------- COPM table ----------
+  function copmRowTemplate(data){
+    const d = data || { problem:"", importance:"", performance:"", satisfaction:"", notes:"" };
+    return `
+      <tr>
+        <td><input class="ot_copm_problem" placeholder="e.g., Dressing independently" value="${escapeHTML(d.problem||"")}"></td>
+        <td><input class="ot_copm_imp" type="number" min="1" max="10" value="${escapeHTML(d.importance||"")}"></td>
+        <td><input class="ot_copm_perf" type="number" min="1" max="10" value="${escapeHTML(d.performance||"")}"></td>
+        <td><input class="ot_copm_sat"  type="number" min="1" max="10" value="${escapeHTML(d.satisfaction||"")}"></td>
+        <td><input class="ot_copm_notes" value="${escapeHTML(d.notes||"")}"></td>
+        <td><button type="button" class="btn danger ot_copm_del">X</button></td>
+      </tr>`;
+  }
+
+  function addCopmRow(data){
+    const body = document.querySelector('#ot_copm_table tbody');
+    if(!body) return;
+    body.insertAdjacentHTML('beforeend', copmRowTemplate(data));
+  }
+
+  function collectCOPM(){
+    const rows = Array.from(document.querySelectorAll('#ot_copm_table tbody tr'));
+    return rows.map(tr => ({
+      problem: tr.querySelector('.ot_copm_problem')?.value.trim() || "",
+      importance: numOrNull(tr.querySelector('.ot_copm_imp')?.value),
+      performance: numOrNull(tr.querySelector('.ot_copm_perf')?.value),
+      satisfaction: numOrNull(tr.querySelector('.ot_copm_sat')?.value),
+      notes: tr.querySelector('.ot_copm_notes')?.value.trim() || ""
+    })).filter(r => r.problem || r.notes);
+  }
+
+  // ---------- GAS table ----------
+  function gasRowTemplate(data){
+    const d = data || { area:"", statement:"", m2:"", m1:"", p0:"", p1:"", p2:"", weeks:"" };
+    return `
+      <tr>
+        <td><input class="ot_gas_area" placeholder="e.g., ADL — Dressing" value="${escapeHTML(d.area||"")}"></td>
+        <td><input class="ot_gas_stmt" placeholder="Goal statement" value="${escapeHTML(d.statement||"")}"></td>
+        <td><input class="ot_gas_m2" placeholder="-2 (baseline)" value="${escapeHTML(d.m2||"")}"></td>
+        <td><input class="ot_gas_m1" placeholder="-1" value="${escapeHTML(d.m1||"")}"></td>
+        <td><input class="ot_gas_p0" placeholder="0 (expected)" value="${escapeHTML(d.p0||"")}"></td>
+        <td><input class="ot_gas_p1" placeholder="+1" value="${escapeHTML(d.p1||"")}"></td>
+        <td><input class="ot_gas_p2" placeholder="+2" value="${escapeHTML(d.p2||"")}"></td>
+        <td><input class="ot_gas_weeks" type="number" min="0" placeholder="weeks" value="${escapeHTML(d.weeks||"")}"></td>
+        <td><button type="button" class="btn danger ot_gas_del">X</button></td>
+      </tr>`;
+  }
+
+  function addGasRow(data){
+    const body = document.querySelector('#ot_gas_table tbody');
+    if(!body) return;
+    body.insertAdjacentHTML('beforeend', gasRowTemplate(data));
+  }
+
+  function collectGAS(){
+    const rows = Array.from(document.querySelectorAll('#ot_gas_table tbody tr'));
+    return rows.map(tr => ({
+      area: tr.querySelector('.ot_gas_area')?.value.trim() || "",
+      statement: tr.querySelector('.ot_gas_stmt')?.value.trim() || "",
+      levels: {
+        "-2": tr.querySelector('.ot_gas_m2')?.value.trim() || "",
+        "-1": tr.querySelector('.ot_gas_m1')?.value.trim() || "",
+        "0":  tr.querySelector('.ot_gas_p0')?.value.trim() || "",
+        "+1": tr.querySelector('.ot_gas_p1')?.value.trim() || "",
+        "+2": tr.querySelector('.ot_gas_p2')?.value.trim() || ""
+      },
+      timeframeWeeks: numOrNull(tr.querySelector('.ot_gas_weeks')?.value)
+    })).filter(r => r.area || r.statement);
+  }
+
+  // ---------- Executive, Handwriting, Routines, Feeding, Safety ----------
+  function collectExecutive(){
+    return {
+      attention:      valSel('ot_exec_attention'),      attentionNotes: _textVal('ot_exec_attention_notes'),
+      initiation:     valSel('ot_exec_initiation'),     initiationNotes: _textVal('ot_exec_initiation_notes'),
+      sustained:      valSel('ot_exec_sustained'),      sustainedNotes: _textVal('ot_exec_sustained_notes'),
+      flexibility:    valSel('ot_exec_flex'),           flexibilityNotes: _textVal('ot_exec_flex_notes'),
+      workingMemory:  valSel('ot_exec_workmem'),        workingMemoryNotes: _textVal('ot_exec_workmem_notes'),
+      planningOrg:    valSel('ot_exec_planorg'),        planningOrgNotes: _textVal('ot_exec_planorg_notes'),
+      emotionalReg:   valSel('ot_exec_emoreg'),         emotionalRegNotes: _textVal('ot_exec_emoreg_notes'),
+      sensoryReg:     valSel('ot_exec_sensreg'),        sensoryRegNotes: _textVal('ot_exec_sensreg_notes')
+    };
+  }
+
+  function collectHandwriting(){
+    return {
+      letter:    valSel('ot_hw_letter'),
+      spacing:   valSel('ot_hw_spacing'),
+      speed:     valSel('ot_hw_speed'),
+      copy:      valSel('ot_hw_copy'),
+      keyboard:  valSel('ot_hw_keyboard'),
+      accomm:    _textVal('ot_hw_accomm'),
+      schoolNotes: _textVal('ot_school_notes')
+    };
+  }
+
+  function collectRoutines(){
+    return {
+      morning:   _textVal('ot_routine_morning'),
+      school:    _textVal('ot_routine_school'),
+      after:     _textVal('ot_routine_after'),
+      bedtime:   _textVal('ot_routine_bedtime'),
+      challenges: _textVal('ot_routine_challenges').split('\n').map(s=>s.trim()).filter(Boolean)
+    };
+  }
+
+  function collectFeeding(){
+    return {
+      appetite: valSel('ot_feed_appetite'),
+      texture:  valSel('ot_feed_texture'),
+      chewing:  valSel('ot_feed_chew'),
+      flags: {
+        picky:      $('#ot_feed_picky')?.checked || false,
+        gagging:    $('#ot_feed_gag')?.checked || false,
+        choking:    $('#ot_feed_choke')?.checked || false,
+        oralSeeking:$('#ot_feed_oralseek')?.checked || false,
+        arfid:      $('#ot_feed_arfid')?.checked || false
+      },
+      notes: _textVal('ot_feed_notes')
+    };
+  }
+
+  function collectSafety(){
+    return {
+      risks: _checkedVals('ot_risk[]'),
+      notes: _textVal('ot_risk_notes')
+    };
+  }
+
+  // ---------- init / events ----------
+  function initCOPM(){
+    const addBtn = $('#ot_copm_add');
+    const table = $('#ot_copm_table');
+    if(!addBtn || !table) return;
+    addBtn.addEventListener('click', ()=> addCopmRow());
+    table.addEventListener('click', (e)=>{
+      if(e.target && e.target.classList.contains('ot_copm_del')){
+        e.target.closest('tr')?.remove();
+      }
+    });
+    // seed one empty row
+    if(!table.querySelector('tbody tr')) addCopmRow();
+  }
+
+  function initGAS(){
+    const addBtn = $('#ot_gas_add');
+    const table = $('#ot_gas_table');
+    if(!addBtn || !table) return;
+    addBtn.addEventListener('click', ()=> addGasRow());
+    table.addEventListener('click', (e)=>{
+      if(e.target && e.target.classList.contains('ot_gas_del')){
+        e.target.closest('tr')?.remove();
+      }
+    });
+    // seed one empty row
+    if(!table.querySelector('tbody tr')) addGasRow();
+  }
+
+  function valSel(id){
+    const el = document.getElementById(id);
+    if(!el) return "";
+    const v = (el.value ?? "").toString().trim();
+    return v;
+  }
+
+  function numOrNull(v){
+    if(v===undefined || v===null) return null;
+    const s = (""+v).trim();
+    if(s==="") return null;
+    const n = Number(s);
+    return Number.isFinite(n) ? n : null;
+  }
+
+  function escapeHTML(s){ return (s??"").toString().replace(/[&<>"']/g,m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m])); }
+
+  // expose init + collector
+  window.__OTX_init = function(){
+    initCOPM();
+    initGAS();
+  };
+
+  window.__OTX_collect = function(){
+    return {
+      profile:     collectRoutines(),
+      feeding:     collectFeeding(),
+      executive:   collectExecutive(),
+      handwriting: collectHandwriting(),
+      safety:      collectSafety(),
+      copm:        collectCOPM(),
+      gas:         collectGAS()
+    };
+  };
+
+})();
 
 
 

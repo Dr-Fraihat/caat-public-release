@@ -3060,6 +3060,7 @@ async function generateAIReportDirect() {
     const body = (reportType === 'OT')
       ? { ...payload, languages: [selectedLang] }
       : { data: payload, languages: [selectedLang] };
+console.log('[AI] url =', url, 'reportType =', reportType, 'body.meta =', body.meta || (body.data && body.data.meta));
 
     const res = await fetch(url, {
       method: 'POST',
@@ -3076,6 +3077,11 @@ async function generateAIReportDirect() {
     }
 
     const result = await res.json();
+console.log('[AI] server templateUsed =', result.templateUsed);
+if ((reportType === 'OT' && result.templateUsed !== 'ot') ||
+    (reportType !== 'OT' && result.templateUsed !== 'adir')) {
+  alert(`Template mismatch: asked for ${reportType} but server used ${result.templateUsed}. Check logs.`);
+}
 
     // === Render the narrative in a new window (keeps your existing UX) ===
     const newWin = window.open('', '_blank');

@@ -3071,10 +3071,19 @@ console.log('[AI] url =', url, 'reportType =', reportType, 'body.meta =', body.m
       body: JSON.stringify(body)
     });
 
-    if (!res.ok) {
-      const text = await res.text().catch(() => '');
-      throw new Error(`Backend ${res.status} ${res.statusText}${text ? ' — ' + text : ''}`);
-    }
+   if (res.status === 429) {
+  const data = await res.json().catch(() => ({}));
+  alert(
+    "OpenAI quota/rate limit reached.\n\n" +
+    (data?.detail || "Please add billing or raise your monthly limit, then try again.")
+  );
+  return; // stop here; keep spinner cleanup in finally{}
+}
+
+if (!res.ok) {
+  const text = await res.text().catch(()=> '');
+  throw new Error(`Backend ${res.status} ${res.statusText}${text ? ' — ' + text : ''}`);
+}
 
     const result = await res.json();
 console.log('[AI] server templateUsed =', result.templateUsed);

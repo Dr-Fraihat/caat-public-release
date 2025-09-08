@@ -2839,11 +2839,16 @@ async function generateNarrativeReport() {
   const selectedLangs = [selectedLang];
 
 try {
-  const response = await fetch("https://caat-backend.onrender.com/generate-report", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ data, languages: selectedLangs })
-  });
+  const url = `${API_BASE}/generate-report?template=adir`;
+const response = await fetch(url, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "X-Report-Type": "ADIR"
+  },
+  body: JSON.stringify({ data, languages: selectedLangs })
+});
+
 
   if (!response.ok) {
     alert("Failed to generate narrative report.");
@@ -3015,148 +3020,105 @@ try {
 function safeGet(obj, key) {
   return obj?.[key] || "Not provided";
 }
+// Pick backend by environment
+const API_BASE =
+  (location.hostname === '127.0.0.1' || location.hostname === 'localhost')
+    ? 'http://localhost:5000'                // local backend (when you run it)
+    : 'https://caat-backend.onrender.com';   // Render backend (deployed)
 
 async function generateAIReportDirect() {
   showLoading();
 
   try {
-    generateFullIntakeReport();
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    // If this is NOT the OT path, rebuild the ADIR payload before calling AI
+    const isOT =
+      !!(window.generatedReportData && window.generatedReportData.meta && String(window.generatedReportData.meta.reportType).toUpperCase() === 'OT');
 
-    const data = window.generatedReportData;
-    if (!data) {
-      hideLoading();
-      alert("Something went wrong. Could not generate report data.");
-      return;
+    if (!isOT) {
+      // ADIR flow still uses the intake report structure
+      generateFullIntakeReport();
+      await new Promise((r) => setTimeout(r, 200));
     }
 
+    // Payload prepared by caller:
+    // - ADIR: window.generatedReportData (from generateFullIntakeReport)
+    // - OT:   window.generatedReportData (from buildOTNarrativeData) with meta.reportType="OT"
+    const payload = window.generatedReportData || {};
+
+    // Language (keep your behavior)
     const selectedLang = document.getElementById("reportLanguage")?.value || "en";
-const selectedLangs = [selectedLang];
+    const reportType = (payload.meta && payload.meta.reportType)
+      ? String(payload.meta.reportType).toUpperCase()
+      : 'ADIR';
 
+    const templateParam = reportType === 'OT' ? 'ot' : 'adir';
+    const url = `${API_BASE}/generate-report?template=${encodeURIComponent(templateParam)}`;
 
-    if (selectedLangs.length === 0) {
-      hideLoading();
-      alert("Please select at least one language for the AI report.");
-      return;
-    }
+    // Backward-compatible body:
+    //  - For ADIR we keep the old { data, languages } envelope
+    //  - For OT we send the OT payload itself (plus languages)
+    const body = (reportType === 'OT')
+      ? { ...payload, languages: [selectedLang] }
+      : { data: payload, languages: [selectedLang] };
 
-    const response = await fetch("https://caat-backend.onrender.com/generate-report", {
-
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ data, languages: selectedLangs })
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Report-Type': reportType
+      },
+      body: JSON.stringify(body)
     });
 
-    if (!response.ok) {
-      hideLoading();
-      alert("Failed to generate narrative report.");
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      throw new Error(`Backend ${res.status} ${res.statusText}${text ? ' — ' + text : ''}`);
+    }
+
+    const result = await res.json();
+
+    // === Render the narrative in a new window (keeps your existing UX) ===
+    const newWin = window.open('', '_blank');
+    if (!newWin) {
+      alert('Popup was blocked. Please allow popups for this site to view the report.');
       return;
     }
 
-    const result = await response.json();
-    const newWin = window.open("", "_blank");
-if (!newWin) {
-  alert("Popup was blocked. Please allow popups for this site to view the report.");
-  hideLoading();
-  return;
-}
+    const title = reportType === 'OT'
+      ? 'Occupational Therapy Evaluation Report'
+      : 'Autism Diagnostic Intake Report (ADIR)';
 
+    const narrativeHtml = (result.report || '')
+      .trim()
+      .split(/\n{2,}/)
+      .map(p => `<p>${p.trim()}</p>`)
+      .join('');
+
+    // For ADIR we append the DSM-5 evaluation you already compute; OT doesn’t use it.
+    const postAppend = (reportType === 'ADIR')
+      ? (typeof evaluateDSM5 === 'function' ? evaluateDSM5(payload) : '')
+      : '';
 
     newWin.document.write(`
       <html>
         <head>
-          <title>Autism Diagnostic Intake Report (ADIR)</title>
+          <title>${title}</title>
           <style>
-            body {
-              font-family: Arial, sans-serif;
-              margin: 0;
-              padding: 0;
-            }
-
-            @page {
-              margin: 2.5cm 2cm;
-            }
-
-            .cover-page {
-              height: 100vh;
-              display: flex;
-              flex-direction: column;
-              justify-content: center;
-              align-items: center;
-              text-align: center;
-              page-break-after: always;
-            }
-
-            .cover-logo {
-              text-align: center;
-              margin-bottom: 40px;
-            }
-
-            .cover-logo img {
-              height: 80px;
-            }
-
-            .cover-logo h2 {
-              font-size: 16px;
-              color: #1a3e80;
-              font-weight: bold;
-              margin: 10px 0 0;
-            }
-
-            .cover-logo h3 {
-              font-size: 14px;
-              color: #1a3e80;
-              font-weight: normal;
-            }
-
-            .cover-title {
-              font-size: 36px;
-              font-weight: bold;
-              color: red;
-              margin-bottom: 10px;
-            }
-
-            .cover-subtitle {
-              font-size: 20px;
-              color: red;
-            }
-
-            .info-page {
-              page-break-after: always;
-              padding: 3cm 2cm;
-            }
-
-            .info-page h2 {
-              text-align: center;
-              color: #1a3e80;
-              margin-bottom: 20px;
-            }
-
-            .info-page p {
-              font-size: 14px;
-              line-height: 1.6;
-            }
-
-            .footer {
-              text-align: center;
-              font-size: 12px;
-              color: #1a3e80;
-              margin-top: 40px;
-              border-top: 1px solid #ccc;
-              padding-top: 10px;
-            }
-
-            .narrative-body {
-              padding: 3cm 2cm;
-              font-size: 14px;
-              page-break-before: always;
-            }
-
-            .narrative-body p {
-              margin: 0 0 1em 0;
-              line-height: 1.6;
-              text-align: justify;
-            }
+            body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+            @page { margin: 2.5cm 2cm; }
+            .cover-page { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; page-break-after: always; }
+            .cover-logo { text-align: center; margin-bottom: 40px; }
+            .cover-logo img { height: 80px; }
+            .cover-logo h2 { font-size: 16px; color: #1a3e80; font-weight: bold; margin: 10px 0 0; }
+            .cover-logo h3 { font-size: 14px; color: #1a3e80; font-weight: normal; }
+            .cover-title { font-size: 36px; font-weight: bold; color: red; margin-bottom: 10px; }
+            .cover-subtitle { font-size: 20px; color: red; }
+            .info-page { page-break-after: always; padding: 3cm 2cm; }
+            .info-page h2 { text-align: center; color: #1a3e80; margin-bottom: 20px; }
+            .info-page p { font-size: 14px; line-height: 1.6; }
+            .footer { text-align: center; font-size: 12px; color: #1a3e80; margin-top: 40px; border-top: 1px solid #ccc; padding-top: 10px; }
+            .narrative-body { padding: 3cm 2cm; font-size: 14px; page-break-before: always; }
+            .narrative-body p { margin: 0 0 1em 0; line-height: 1.6; text-align: justify; }
           </style>
         </head>
         <body>
@@ -3167,30 +3129,35 @@ if (!newWin) {
               <h2>AMERICAN AUTISM COUNCIL FOR ACCREDITATION AND CONTINUING EDUCATION</h2>
               <h3>Comprehensive Autism Assessment Tool (CAAT)</h3>
             </div>
-            <div class="cover-title">Autism Diagnostic Intake Report (ADIR)</div>
+            <div class="cover-title">${title}</div>
             <div class="cover-subtitle">Private and Confidential</div>
-
             <div class="footer">
               2870 E Oakland Park Blvd Fort Lauderdale, FL 33306 *** info@americanautismcouncil.org *** www.americanautismcouncil.org
             </div>
           </div>
 
-          <!-- INFO PAGE -->
+          <!-- INFO PAGE (ADIR shows full client info; OT shows if provided) -->
           <div class="info-page">
             <h2>Confidentiality Notice</h2>
             <p style="text-align: justify; max-width: 700px; margin: auto;">
               The contents of this report are of a confidential and sensitive nature and should not be duplicated without the consent of the parents. The data contained herein is valid for a limited period and due to the changing and developing nature of children, the information and recommendations are meant for current use. Reference to or use of this report in future years should be made with caution.
             </p>
 
-            <h2 style="margin-top: 40px;">Client Information</h2>
-            <hr/>
-            <p><strong>Name:</strong> ${data.clientInfo.fullName}</p>
-            <p><strong>Date of Birth:</strong> ${data.clientInfo.dob}</p>
-            <p><strong>Intake Date:</strong> ${data.clientInfo.intakeDate}</p>
-            <p><strong>Age at Assessment:</strong> ${data.clientInfo.age}</p>
-            <p><strong>Gender:</strong> ${data.clientInfo.gender}</p>
-            <p><strong>Reported By:</strong> ${data.clientInfo.caseManager}</p>
-            <p><strong>Date of Report:</strong> ${data.clientInfo.reportDate}</p>
+            ${
+              reportType === 'ADIR'
+                ? `
+                  <h2 style="margin-top: 40px;">Client Information</h2>
+                  <hr/>
+                  <p><strong>Name:</strong> ${payload.clientInfo?.fullName || ''}</p>
+                  <p><strong>Date of Birth:</strong> ${payload.clientInfo?.dob || ''}</p>
+                  <p><strong>Intake Date:</strong> ${payload.clientInfo?.intakeDate || ''}</p>
+                  <p><strong>Age at Assessment:</strong> ${payload.clientInfo?.age || ''}</p>
+                  <p><strong>Gender:</strong> ${payload.clientInfo?.gender || ''}</p>
+                  <p><strong>Reported By:</strong> ${payload.clientInfo?.caseManager || ''}</p>
+                  <p><strong>Date of Report:</strong> ${payload.clientInfo?.reportDate || ''}</p>
+                `
+                : ''
+            }
 
             <div class="footer">
               2870 E Oakland Park Blvd Fort Lauderdale, FL 33306 *** info@americanautismcouncil.org *** www.americanautismcouncil.org
@@ -3198,26 +3165,10 @@ if (!newWin) {
           </div>
 
           <!-- NARRATIVE -->
-         <div class="narrative-body">
-  ${result.report
-    .trim()
-    .split(/\n{2,}/)                         // Split by empty lines (double \n)
-    .map(paragraph => `<p>${paragraph.trim()}</p>`)
-    .join("")}
-  ${evaluateDSM5(data)}
-</div>
-
-<!-- SIGNATURE SECTION -->
-<div style="padding: 3cm 2cm; font-size: 14px; margin-top: 60px;">
-  <h2 style="color:#1a3e80; font-size:20px; border-bottom: 1px solid #aaa;">Signature</h2>
-  <p><strong>Case Manager Name:</strong> ${safeGet(data.clientInfo, "caseManager")}</p>
-<p><strong>Case Manager Signature:</strong> ${safeGet(data.clientInfo, "caseManagerSignature")}</p>
-<p><strong>Date:</strong> ${safeGet(data.clientInfo, "reportDate")}</p>
-  <br>
-  <p>This report has been reviewed and signed by the responsible clinician to affirm the accuracy and completeness of the information presented.</p>
-</div>
-
-
+          <div class="narrative-body">
+            ${narrativeHtml}
+            ${postAppend}
+          </div>
         </body>
       </html>
     `);
@@ -3225,11 +3176,12 @@ if (!newWin) {
     newWin.document.close();
   } catch (err) {
     console.error(err);
-    alert("An error occurred while generating the AI report.");
+    alert("An error occurred while generating the AI report.\n\n" + (err?.message || err));
   } finally {
     hideLoading();
   }
 }
+
 document.addEventListener("DOMContentLoaded", () => {
   const yearSpan = document.getElementById("copyrightYear");
   if (yearSpan) {

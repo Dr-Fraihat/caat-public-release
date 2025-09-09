@@ -3104,10 +3104,27 @@ if ((reportType === 'OT' && result.templateUsed !== 'ot') ||
       : 'Autism Diagnostic Intake Report (ADIR)';
 
     const narrativeHtml = (result.report || '')
-      .trim()
-      .split(/\n{2,}/)
-      .map(p => `<p>${p.trim()}</p>`)
-      .join('');
+  .trim()
+  .split(/\n{2,}/)
+  .map(block => {
+    const b = block.trim();
+
+    // If the block is a plain "Heading:" line, render a styled H2
+    const m = b.match(/^([A-Za-z].{2,}):\s*$/);
+    if (m) {
+      return `<h2 class="report-h2">${m[1]}</h2>`;
+    }
+
+    // If the block starts with **Heading** from older prompts, handle that too
+    const m2 = b.match(/^\*\*([^*]+)\*\*:?\s*$/);
+    if (m2) {
+      return `<h2 class="report-h2">${m2[1]}</h2>`;
+    }
+
+    return `<p>${b}</p>`;
+  })
+  .join('');
+
 
     // For ADIR we append the DSM-5 evaluation you already compute; OT doesn’t use it.
     const postAppend = (reportType === 'ADIR')
@@ -3135,6 +3152,8 @@ if ((reportType === 'OT' && result.templateUsed !== 'ot') ||
             .footer { text-align: center; font-size: 12px; color: #1a3e80; margin-top: 40px; border-top: 1px solid #ccc; padding-top: 10px; }
             .narrative-body { padding: 3cm 2cm; font-size: 14px; page-break-before: always; }
             .narrative-body p { margin: 0 0 1em 0; line-height: 1.6; text-align: justify; }
+            .report-h2 { color:#1a3e80; font-size:20px; font-weight:600; margin:24px 0 10px; }
+
           </style>
         </head>
         <body>
@@ -3159,27 +3178,27 @@ if ((reportType === 'OT' && result.templateUsed !== 'ot') ||
               The contents of this report are of a confidential and sensitive nature and should not be duplicated without the consent of the parents. The data contained herein is valid for a limited period and due to the changing and developing nature of children, the information and recommendations are meant for current use. Reference to or use of this report in future years should be made with caution.
             </p>
 
-                        ${
-              (ci && (ci.fullName || ci.name || ci.dob || ci.age || ci.ageYears || ci.gender || ci.sex || ci.educationPlacement || ci.languages || ci.diagnoses))
-                ? `
-                  <h2 style="margin-top: 40px;">Client Information</h2>
-                  <hr/>
-                  <p><strong>Name:</strong> ${ci.fullName || ci.name || ""}</p>
-                  <p><strong>Date of Birth:</strong> ${ci.dob || ""}</p>
-                  <p><strong>Age at Assessment:</strong> ${ci.ageYears || ci.age || ""}</p>
-                  <p><strong>Gender:</strong> ${ci.gender || ci.sex || ""}</p>
-                  <p><strong>Languages:</strong> ${
-                    Array.isArray(ci.languages) ? ci.languages.join(", ") : (ci.languages || "")
-                  }</p>
-                  <p><strong>Education Placement:</strong> ${ci.educationPlacement || ""}</p>
-                  <p><strong>Diagnoses:</strong> ${
-                    Array.isArray(ci.diagnoses) ? ci.diagnoses.join(", ") : (ci.diagnoses || "")
-                  }</p>
-                  <p><strong>Date of Report:</strong> ${ci.reportDate || new Date().toLocaleDateString()}</p>
-                `
-                : ''
+                       ${
+  (ci && (ci.fullName || ci.name || ci.dob || ci.age || ci.ageYears || ci.gender || ci.sex || ci.educationPlacement || ci.languages || ci.diagnoses))
+    ? `
+      <h2 style="margin-top: 40px;">Client Information</h2>
+      <hr/>
+      <p><strong>Name:</strong> ${ci.fullName || ci.name || ""}</p>
+      <p><strong>Date of Birth:</strong> ${ci.dob || ""}</p>
+      <p><strong>Age at Assessment:</strong> ${ci.ageYears || ci.age || ""}</p>
+      <p><strong>Gender:</strong> ${ci.gender || ci.sex || ""}</p>
+      <p><strong>Languages:</strong> ${
+        Array.isArray(ci.languages) ? ci.languages.join(", ") : (ci.languages || "")
+      }</p>
+      <p><strong>Education Placement:</strong> ${ci.educationPlacement || ""}</p>
+      <p><strong>Diagnoses:</strong> ${
+        Array.isArray(ci.diagnoses) ? ci.diagnoses.join(", ") : (ci.diagnoses || "")
+      }</p>
+      <p><strong>Date of Report:</strong> ${ci.reportDate || new Date().toLocaleDateString()}</p>
+    `
+    : ''
+}
 
-            }
 
             <div class="footer">
               2870 E Oakland Park Blvd Fort Lauderdale, FL 33306 *** info@americanautismcouncil.org *** www.americanautismcouncil.org

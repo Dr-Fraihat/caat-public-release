@@ -2993,16 +2993,7 @@ const response = await fetch(url, {
         </div>
       </div>
 
-      <!-- MAIN NARRATIVE REPORT -->
-      <div class="narrative-body">
-        ${result.report
-  .trim()
-  .split(/\n{2,}/)  // Split by double line breaks (paragraphs)
-  .map(paragraph => `<p>${paragraph.trim()}</p>`)
-  .join("")}
-
-
-      </div>
+      
     </body>
   </html>
   `);
@@ -3172,7 +3163,14 @@ const narrativeHtml = (() => {
             .footer { text-align: center; font-size: 12px; color: #1a3e80; margin-top: 40px; border-top: 1px solid #ccc; padding-top: 10px; }
           /* force body text to black in both OT & ADIR reports */
 /* 1) Reset all narrative text to black (including strong/em, spans, etc.) */
-.narrative-body, .narrative-body * { color:#000 !important; }
+.narrative-body, .narrative-body * {
+  color:#000 !important;
+  font-family: Arial, sans-serif !important;
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+  font-weight: 400 !important;       /* default to normal */
+}
+
 .info-page, .info-page * { color:#000 !important; }
 
 /* 2) Headings stay blue — put this AFTER the reset so it wins */
@@ -3183,7 +3181,8 @@ const narrativeHtml = (() => {
 .narrative-body h5,
 .narrative-body h6,
 .report-h2 { color:#1a3e80 !important; font-weight:600; }
-
+/* Keep bold text black in body paragraphs */
+.narrative-body b, .narrative-body strong { color:#000 !important; font-weight:600 !important; }
 /* 3) Body paragraph spacing/justification (no color here) */
 .narrative-body p { margin: 0 0 1em 0; line-height: 1.6; text-align: justify; }
 
@@ -3239,7 +3238,7 @@ const narrativeHtml = (() => {
           </div>
 
           <!-- NARRATIVE -->
-          <div class="narrative-body">
+          <div class="narrative-body report-root">
             ${narrativeHtml}
             ${postAppend}
           </div>

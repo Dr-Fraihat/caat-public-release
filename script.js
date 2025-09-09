@@ -3170,9 +3170,10 @@ const narrativeHtml = (() => {
             .info-page h2 { text-align: center; color: #1a3e80; margin-bottom: 20px; }
             .info-page p { font-size: 14px; line-height: 1.6; }
             .footer { text-align: center; font-size: 12px; color: #1a3e80; margin-top: 40px; border-top: 1px solid #ccc; padding-top: 10px; }
-            .narrative-body { padding: 3cm 2cm; font-size: 14px; page-break-before: always; }
-            .narrative-body p { margin: 0 0 1em 0; line-height: 1.6; text-align: justify; }
-            .report-h2 { color:#1a3e80; font-size:20px; font-weight:600; margin:24px 0 10px; }
+            .narrative-body { padding: 3cm 2cm; font-size: 14px; page-break-before: always; color:#000; }
+.narrative-body p { color:#000; margin: 0 0 1em 0; line-height: 1.6; text-align: justify; }
+.report-h2 { color:#1a3e80; font-size:20px; font-weight:600; margin:24px 0 10px; }
+
 
           </style>
         </head>

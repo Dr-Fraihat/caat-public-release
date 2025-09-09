@@ -3109,21 +3109,34 @@ if ((reportType === 'OT' && result.templateUsed !== 'ot') ||
   .map(block => {
     const b = block.trim();
 
-    // If the block is a plain "Heading:" line, render a styled H2
-    const m = b.match(/^([A-Za-z].{2,}):\s*$/);
+    // Case 1: "**Heading:** rest of paragraph"
+    let m = b.match(/^\*\*([^*]+)\*\*:\s*(.+)$/s);
+    if (m) {
+      return `<h2 class="report-h2">${m[1]}</h2><p>${m[2].trim()}</p>`;
+    }
+
+    // Case 2: "Heading: rest of paragraph"
+    m = b.match(/^([A-Za-z].{2,}):\s+(.+)$/s);
+    if (m) {
+      return `<h2 class="report-h2">${m[1]}</h2><p>${m[2].trim()}</p>`;
+    }
+
+    // Case 3: stand-alone heading (no paragraph)
+    m = b.match(/^([A-Za-z].{2,}):\s*$/);
     if (m) {
       return `<h2 class="report-h2">${m[1]}</h2>`;
     }
 
-    // If the block starts with **Heading** from older prompts, handle that too
-    const m2 = b.match(/^\*\*([^*]+)\*\*:?\s*$/);
-    if (m2) {
-      return `<h2 class="report-h2">${m2[1]}</h2>`;
+    // Case 4: stand-alone "**Heading**"
+    m = b.match(/^\*\*([^*]+)\*\*:?\s*$/);
+    if (m) {
+      return `<h2 class="report-h2">${m[1]}</h2>`;
     }
 
     return `<p>${b}</p>`;
   })
   .join('');
+
 
 
     // For ADIR we append the DSM-5 evaluation you already compute; OT doesn’t use it.
@@ -3646,6 +3659,16 @@ function buildOTNarrativeData(){
   const maybeClient =
     (window.generatedReportData && (window.generatedReportData.client || window.generatedReportData.clientInfo))
     || null;
+    // Fallback demographics from the visible form (so OT reports can stand alone)
+const fn = _textVal("firstName");
+const mn = _textVal("middleName");
+const ln = _textVal("lastName");
+const fullNameFallback = [fn, mn, ln].filter(Boolean).join(" ").trim();
+const dobFallback  = _textVal("dobGregorian");
+const ageFallback  = _textVal("age");
+const genderRaw    = document.getElementById("gender")?.value || "";
+const genderFallback = (genderRaw === "other" ? _textVal("genderOtherField") : genderRaw);
+
 // Try to pull intake snapshot (for independent OT)
 let intakeSnap = null;
 try {
@@ -3655,10 +3678,10 @@ try {
 
 // Normalize to ADIR-like clientInfo so rendering & AI can reuse it
 const clientInfo = {
-  fullName: intakeSnap?.name || maybeClient?.fullName || "",
-  dob: intakeSnap?.dob || maybeClient?.dob || "",
-  age: (intakeSnap?.ageYears ?? maybeClient?.age) ?? "",
-  gender: intakeSnap?.sex || maybeClient?.gender || "",
+  fullName: intakeSnap?.name || maybeClient?.fullName || fullNameFallback || "",
+  dob: intakeSnap?.dob || maybeClient?.dob || dobFallback || "",
+  age: (intakeSnap?.ageYears ?? maybeClient?.age) ?? ageFallback ?? "",
+  gender: intakeSnap?.sex || maybeClient?.gender || genderFallback || "",
   languages: Array.isArray(intakeSnap?.languages) ? intakeSnap.languages
            : (Array.isArray(maybeClient?.languages) ? maybeClient.languages : (maybeClient?.languages || "")),
   educationPlacement: intakeSnap?.educationPlacement || "",
@@ -3666,6 +3689,7 @@ const clientInfo = {
            : (maybeClient?.diagnoses || ""),
   reportDate: new Date().toLocaleDateString()
 };
+
 
   // Unified OT Core indices
   const otCore = (window.__OTCore_collect ? window.__OTCore_collect() : null);

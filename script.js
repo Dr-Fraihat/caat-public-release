@@ -3171,17 +3171,21 @@ const narrativeHtml = (() => {
             .info-page p { font-size: 14px; line-height: 1.6; }
             .footer { text-align: center; font-size: 12px; color: #1a3e80; margin-top: 40px; border-top: 1px solid #ccc; padding-top: 10px; }
           /* force body text to black in both OT & ADIR reports */
+/* 1) Reset all narrative text to black (including strong/em, spans, etc.) */
 .narrative-body, .narrative-body * { color:#000 !important; }
 .info-page, .info-page * { color:#000 !important; }
 
-/* blue section headings only */
-.report-h2 { color:#1a3e80 !important; font-size:20px; font-weight:600; margin:24px 0 10px; }
+/* 2) Headings stay blue — put this AFTER the reset so it wins */
+.narrative-body h1,
+.narrative-body h2,
+.narrative-body h3,
+.narrative-body h4,
+.narrative-body h5,
+.narrative-body h6,
+.report-h2 { color:#1a3e80 !important; font-weight:600; }
 
-/* paragraph spacing/justification */
+/* 3) Body paragraph spacing/justification (no color here) */
 .narrative-body p { margin: 0 0 1em 0; line-height: 1.6; text-align: justify; }
-
- 
-
 
           </style>
         </head>

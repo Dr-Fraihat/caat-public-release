@@ -3103,39 +3103,36 @@ if ((reportType === 'OT' && result.templateUsed !== 'ot') ||
       ? 'Occupational Therapy Evaluation Report'
       : 'Autism Diagnostic Intake Report (ADIR)';
 
-    const narrativeHtml = (result.report || '')
-  .trim()
-  .split(/\n{2,}/)
-  .map(block => {
-    const b = block.trim();
+    // Convert AI text → blue H2 headings + paragraphs (ADIR style)
+const narrativeHtml = (() => {
+  const raw = (result.report || '').replace(/\r\n/g, '\n').trim();
+  const lines = raw.split('\n').map(s => s.trim()).filter(Boolean);
+  const out = [];
+  let buf = [];
 
-    // Case 1: "**Heading:** rest of paragraph"
-    let m = b.match(/^\*\*([^*]+)\*\*:\s*(.+)$/s);
-    if (m) {
-      return `<h2 class="report-h2">${m[1]}</h2><p>${m[2].trim()}</p>`;
-    }
+  const H = t => `<h2 class="report-h2">${t}</h2>`;
+  const flush = () => { if (buf.length) { out.push(`<p>${buf.join(' ')}</p>`); buf = []; } };
 
-    // Case 2: "Heading: rest of paragraph"
-    m = b.match(/^([A-Za-z].{2,}):\s+(.+)$/s);
-    if (m) {
-      return `<h2 class="report-h2">${m[1]}</h2><p>${m[2].trim()}</p>`;
-    }
+  for (const line of lines) {
+    // Case A: "**Heading:** rest of paragraph"
+    let m = line.match(/^\*\*([^*]+)\*\*:\s*(.+)$/s);
+    if (m) { flush(); out.push(H(m[1].trim())); buf.push(m[2].trim()); continue; }
 
-    // Case 3: stand-alone heading (no paragraph)
-    m = b.match(/^([A-Za-z].{2,}):\s*$/);
-    if (m) {
-      return `<h2 class="report-h2">${m[1]}</h2>`;
-    }
+    // Case B: "Heading: rest of paragraph"
+    m = line.match(/^([A-Za-z].{2,}?):\s+(.+)$/s);
+    if (m) { flush(); out.push(H(m[1].trim())); buf.push(m[2].trim()); continue; }
 
-    // Case 4: stand-alone "**Heading**"
-    m = b.match(/^\*\*([^*]+)\*\*:?\s*$/);
-    if (m) {
-      return `<h2 class="report-h2">${m[1]}</h2>`;
-    }
+    // Case C: stand-alone heading (with/without "**", with/without trailing :)
+    m = line.match(/^\*\*([^*]+)\*\*:?\s*$/) || line.match(/^([A-Za-z].{2,}):?\s*$/);
+    if (m) { flush(); out.push(H(m[1].trim())); continue; }
 
-    return `<p>${b}</p>`;
-  })
-  .join('');
+    // Otherwise it’s normal paragraph text (may be split over multiple lines)
+    buf.push(line);
+  }
+  flush();
+  return out.join('');
+})();
+
 
 
 

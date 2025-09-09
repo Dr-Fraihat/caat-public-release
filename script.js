@@ -3094,44 +3094,75 @@ if ((reportType === 'OT' && result.templateUsed !== 'ot') ||
       ? 'Occupational Therapy Evaluation Report'
       : 'Autism Diagnostic Intake Report (ADIR)';
 
-    // Convert AI text → blue H2 headings + paragraphs (ADIR style)
+    // Convert AI text → blue H2 headings + paragraphs (ADIR style) using a whitelist
 const narrativeHtml = (() => {
-  // normalize newlines
-  let raw = (result.report || '').replace(/\r\n/g, '\n').trim();
+  const raw = (result.report || '').replace(/\r\n/g, '\n').trim();
 
-  // helpful cleanup: remove markdown ** around whole-line headings if any slipped in
-  // (the regex below still handles them, but this reduces edge cases)
-  // raw = raw.replace(/^\*\*(.+)\*\$/gm, '$1');
+  // Only these lines are allowed to become headings (case-insensitive; colon/asterisks optional)
+  const HEADINGS = new Set([
+    'Demographic Summary',
+    'Background & Referral Context',
+    'Occupational Profile & Daily Routines',
+    'Sensory Profile',
+    'Motor Skills (Fine / Visual-Motor)',
+    'Motor Skills (Gross / Praxis)',
+    'ADLs & Participation',
+    'Executive Function & Self-Regulation',
+    'Feeding & Oral-Motor',
+    'Risk & Safety',
+    'Clinical Observations',
+    'Strengths & Barriers',
+    'Caregiver Priorities (COPM)',
+    'Goals & Plan',
+    'Recommendations'
+  ].map(s => s.toLowerCase()));
 
+  // Normalize lines, drop empties
   const lines = raw.split('\n').map(s => s.trim()).filter(Boolean);
+
   const out = [];
   let buf = [];
 
-  const H = t => `<h2 class="report-h2">${t}</h2>`;
   const flush = () => { if (buf.length) { out.push(`<p>${buf.join(' ')}</p>`); buf = []; } };
 
-  for (let line of lines) {
-    // strip leading/trailing curly/straight quotes for matching
-    const s = line.replace(/^[“”"']+/, '').replace(/[”"']+$/, '');
+  // Helper: strip ** … ** and trailing :
+  const clean = s => s
+    .replace(/^[“”"']+/, '').replace(/[”"']+$/, '')
+    .replace(/^\*{1,2}\s*/, '').replace(/\s*\*{1,2}$/, '')
+    .replace(/:$/, '')
+    .trim();
 
-    // Case A: “**Heading:** paragraph”  OR  **Heading:** paragraph
-    let m = s.match(/^\*{1,2}\s*([^*]+?)\s*\*{1,2}:\s*(.+)$/s);
-    if (m) { flush(); out.push(H(m[1].trim())); buf.push(m[2].trim()); continue; }
+  for (const line of lines) {
+    const s = line.replace(/^[“”"']+/, '').replace(/[”"']+$/, '').trim();
 
-    // Case B: “Heading: paragraph” (no asterisks)
-    m = s.match(/^([A-Za-z].{2,}?):\s+(.+)$/s);
-    if (m) { flush(); out.push(H(m[1].trim())); buf.push(m[2].trim()); continue; }
+    // If the whole line is a short title (with/without ** and :), and it's in our whitelist → heading
+    const maybeTitle = clean(s);
+    const isShort = maybeTitle.length <= 80 && !/\.\s*$/.test(maybeTitle); // not a sentence
+    if (isShort && HEADINGS.has(maybeTitle.toLowerCase())) {
+      flush();
+      out.push(`<h2 class="report-h2">${maybeTitle}</h2>`);
+      continue;
+    }
 
-    // Case C: stand-alone heading (with/without **, with/without trailing :)
-    m = s.match(/^\*{1,2}\s*([^*]+?)\s*\*{1,2}:?\s*$/) || s.match(/^([A-Za-z].{2,}):?\s*$/);
-    if (m) { flush(); out.push(H(m[1].trim())); continue; }
+    // If it's a "Title: paragraph" line and the title is whitelisted → heading + paragraph
+    const m = s.match(/^(.+?):\s+(.+)$/s);
+    if (m) {
+      const title = clean(m[1]);
+      if (HEADINGS.has(title.toLowerCase())) {
+        flush();
+        out.push(`<h2 class="report-h2">${title}</h2>`);
+        buf.push(m[2].trim());
+        continue;
+      }
+    }
 
-    // Otherwise paragraph text; also strip any leftover enclosing ** at edges
+    // Otherwise it's normal text (part of current paragraph)
     buf.push(s.replace(/^\*{1,2}|\*{1,2}$/g, ''));
   }
   flush();
   return out.join('');
 })();
+
 
 
 

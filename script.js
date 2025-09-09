@@ -3799,6 +3799,50 @@ try {
 } catch(_e) {
   adirBg = null;
 }
+// ---- Fallback: build minimal ADIR background directly from the form
+if (!adirBg) {
+  const plang     = _textVal('primaryLanguage');
+  const secLangs  = _textVal('secondaryLanguages');
+  const exposure  = _textVal('languageExposure');
+  const marital   = document.getElementById('parentMaritalStatus')?.value || '';
+  const guardian1 = _textVal('household1');               // primary guardian name
+  const concerns  = _textVal('primaryConcerns');
+  const outcomes  = _textVal('desiredOutcomes');
+  const weekday   = _textVal('weekdaySchedule');
+  const weekend   = _textVal('weekendSchedule');
+
+  // Build short paragraphs only if we have something to say
+  const demoParts = [];
+  if (plang)    demoParts.push(`Primary language: ${plang}`);
+  if (secLangs) demoParts.push(`Secondary languages: ${secLangs}`);
+  if (exposure) demoParts.push(`Exposure to secondary languages: ${exposure}%`);
+  if (marital)  demoParts.push(`Parents' marital status: ${marital}`);
+
+  const bgParts = [];
+  if (guardian1) bgParts.push(`Primary household guardian: ${guardian1}`);
+  if (concerns)  bgParts.push(`Primary concerns: ${concerns}`);
+  if (outcomes)  bgParts.push(`Desired outcomes: ${outcomes}`);
+  if (weekday || weekend) {
+    bgParts.push(
+      `Routines${weekday ? ` — weekday: ${weekday}` : ''}${weekend ? `; weekend: ${weekend}` : ''}`
+    );
+  }
+
+  adirBg = {
+    demographicSummary: demoParts.length ? demoParts.join('. ') + '.' : null,
+    backgroundBirth: null,
+    medicalDevelopmental: null,
+    developmentalBehavioral: null,
+    education: null,
+    family: null,
+    living: null,
+    primaryConcerns: (concerns || outcomes) ? (concerns || outcomes) : null
+  };
+
+  // Enrich the Background & Referral Context paragraph if we assembled pieces
+  const merged = bgParts.length ? bgParts.join('. ') + '.' : null;
+  if (merged) adirBg.backgroundBirth = merged;  // we’ll fold this into Background & Referral Context in the prompt
+}
 
 
   // Unified OT Core indices

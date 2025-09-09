@@ -3105,7 +3105,13 @@ if ((reportType === 'OT' && result.templateUsed !== 'ot') ||
 
     // Convert AI text → blue H2 headings + paragraphs (ADIR style)
 const narrativeHtml = (() => {
-  const raw = (result.report || '').replace(/\r\n/g, '\n').trim();
+  // normalize newlines
+  let raw = (result.report || '').replace(/\r\n/g, '\n').trim();
+
+  // helpful cleanup: remove markdown ** around whole-line headings if any slipped in
+  // (the regex below still handles them, but this reduces edge cases)
+  // raw = raw.replace(/^\*\*(.+)\*\$/gm, '$1');
+
   const lines = raw.split('\n').map(s => s.trim()).filter(Boolean);
   const out = [];
   let buf = [];
@@ -3113,25 +3119,29 @@ const narrativeHtml = (() => {
   const H = t => `<h2 class="report-h2">${t}</h2>`;
   const flush = () => { if (buf.length) { out.push(`<p>${buf.join(' ')}</p>`); buf = []; } };
 
-  for (const line of lines) {
-    // Case A: "**Heading:** rest of paragraph"
-    let m = line.match(/^\*\*([^*]+)\*\*:\s*(.+)$/s);
+  for (let line of lines) {
+    // strip leading/trailing curly/straight quotes for matching
+    const s = line.replace(/^[“”"']+/, '').replace(/[”"']+$/, '');
+
+    // Case A: “**Heading:** paragraph”  OR  **Heading:** paragraph
+    let m = s.match(/^\*{1,2}\s*([^*]+?)\s*\*{1,2}:\s*(.+)$/s);
     if (m) { flush(); out.push(H(m[1].trim())); buf.push(m[2].trim()); continue; }
 
-    // Case B: "Heading: rest of paragraph"
-    m = line.match(/^([A-Za-z].{2,}?):\s+(.+)$/s);
+    // Case B: “Heading: paragraph” (no asterisks)
+    m = s.match(/^([A-Za-z].{2,}?):\s+(.+)$/s);
     if (m) { flush(); out.push(H(m[1].trim())); buf.push(m[2].trim()); continue; }
 
-    // Case C: stand-alone heading (with/without "**", with/without trailing :)
-    m = line.match(/^\*\*([^*]+)\*\*:?\s*$/) || line.match(/^([A-Za-z].{2,}):?\s*$/);
+    // Case C: stand-alone heading (with/without **, with/without trailing :)
+    m = s.match(/^\*{1,2}\s*([^*]+?)\s*\*{1,2}:?\s*$/) || s.match(/^([A-Za-z].{2,}):?\s*$/);
     if (m) { flush(); out.push(H(m[1].trim())); continue; }
 
-    // Otherwise it’s normal paragraph text (may be split over multiple lines)
-    buf.push(line);
+    // Otherwise paragraph text; also strip any leftover enclosing ** at edges
+    buf.push(s.replace(/^\*{1,2}|\*{1,2}$/g, ''));
   }
   flush();
   return out.join('');
 })();
+
 
 
 

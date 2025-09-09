@@ -3113,6 +3113,7 @@ if ((reportType === 'OT' && result.templateUsed !== 'ot') ||
     const postAppend = (reportType === 'ADIR')
       ? (typeof evaluateDSM5 === 'function' ? evaluateDSM5(payload) : '')
       : '';
+    const ci = payload.clientInfo || payload.client || payload.fromIntakeSnapshot || {};
 
     newWin.document.write(`
       <html>
@@ -3158,20 +3159,26 @@ if ((reportType === 'OT' && result.templateUsed !== 'ot') ||
               The contents of this report are of a confidential and sensitive nature and should not be duplicated without the consent of the parents. The data contained herein is valid for a limited period and due to the changing and developing nature of children, the information and recommendations are meant for current use. Reference to or use of this report in future years should be made with caution.
             </p>
 
-            ${
-              reportType === 'ADIR'
+                        ${
+              (ci && (ci.fullName || ci.name || ci.dob || ci.age || ci.ageYears || ci.gender || ci.sex || ci.educationPlacement || ci.languages || ci.diagnoses))
                 ? `
                   <h2 style="margin-top: 40px;">Client Information</h2>
                   <hr/>
-                  <p><strong>Name:</strong> ${payload.clientInfo?.fullName || ''}</p>
-                  <p><strong>Date of Birth:</strong> ${payload.clientInfo?.dob || ''}</p>
-                  <p><strong>Intake Date:</strong> ${payload.clientInfo?.intakeDate || ''}</p>
-                  <p><strong>Age at Assessment:</strong> ${payload.clientInfo?.age || ''}</p>
-                  <p><strong>Gender:</strong> ${payload.clientInfo?.gender || ''}</p>
-                  <p><strong>Reported By:</strong> ${payload.clientInfo?.caseManager || ''}</p>
-                  <p><strong>Date of Report:</strong> ${payload.clientInfo?.reportDate || ''}</p>
+                  <p><strong>Name:</strong> ${ci.fullName || ci.name || ""}</p>
+                  <p><strong>Date of Birth:</strong> ${ci.dob || ""}</p>
+                  <p><strong>Age at Assessment:</strong> ${ci.ageYears || ci.age || ""}</p>
+                  <p><strong>Gender:</strong> ${ci.gender || ci.sex || ""}</p>
+                  <p><strong>Languages:</strong> ${
+                    Array.isArray(ci.languages) ? ci.languages.join(", ") : (ci.languages || "")
+                  }</p>
+                  <p><strong>Education Placement:</strong> ${ci.educationPlacement || ""}</p>
+                  <p><strong>Diagnoses:</strong> ${
+                    Array.isArray(ci.diagnoses) ? ci.diagnoses.join(", ") : (ci.diagnoses || "")
+                  }</p>
+                  <p><strong>Date of Report:</strong> ${ci.reportDate || new Date().toLocaleDateString()}</p>
                 `
                 : ''
+
             }
 
             <div class="footer">
@@ -3620,6 +3627,26 @@ function buildOTNarrativeData(){
   const maybeClient =
     (window.generatedReportData && (window.generatedReportData.client || window.generatedReportData.clientInfo))
     || null;
+// Try to pull intake snapshot (for independent OT)
+let intakeSnap = null;
+try {
+  const caseDoc = (typeof getCurrentCaseDoc === 'function') ? getCurrentCaseDoc() : null;
+  intakeSnap = caseDoc?.otAssessment?.fromIntakeSnapshot || caseDoc?.intake?.client || null;
+} catch(_e){}
+
+// Normalize to ADIR-like clientInfo so rendering & AI can reuse it
+const clientInfo = {
+  fullName: intakeSnap?.name || maybeClient?.fullName || "",
+  dob: intakeSnap?.dob || maybeClient?.dob || "",
+  age: (intakeSnap?.ageYears ?? maybeClient?.age) ?? "",
+  gender: intakeSnap?.sex || maybeClient?.gender || "",
+  languages: Array.isArray(intakeSnap?.languages) ? intakeSnap.languages
+           : (Array.isArray(maybeClient?.languages) ? maybeClient.languages : (maybeClient?.languages || "")),
+  educationPlacement: intakeSnap?.educationPlacement || "",
+  diagnoses: Array.isArray(intakeSnap?.diagnoses) ? intakeSnap.diagnoses
+           : (maybeClient?.diagnoses || ""),
+  reportDate: new Date().toLocaleDateString()
+};
 
   // Unified OT Core indices
   const otCore = (window.__OTCore_collect ? window.__OTCore_collect() : null);
@@ -3661,6 +3688,8 @@ function buildOTNarrativeData(){
   const payload = {
     meta: { reportType: "OT", module: "CAAT-OT v1" },
     client: maybeClient,
+    clientInfo,                        // ← NEW (normalized demographics)
+    fromIntakeSnapshot: intakeSnap,    // ← NEW (raw intake snapshot if present)
     caregiverInterview: {
       primaryConcerns: _textVal("ot_primaryConcerns"),
       environments: envs,

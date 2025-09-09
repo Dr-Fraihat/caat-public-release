@@ -2842,10 +2842,8 @@ try {
   const url = `${API_BASE}/generate-report?template=adir`;
 const response = await fetch(url, {
   method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-    "X-Report-Type": "ADIR"
-  },
+headers: { "Content-Type": "application/json" },
+
   body: JSON.stringify({ data, languages: selectedLangs })
 });
 
@@ -3054,13 +3052,11 @@ async function generateAIReportDirect() {
 console.log('[AI] url =', url, 'reportType =', reportType, 'body.meta =', body.meta || (body.data && body.data.meta));
 
     const res = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Report-Type': reportType
-      },
-      body: JSON.stringify(body)
-    });
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(body)
+});
+
 
    if (res.status === 429) {
   const data = await res.json().catch(() => ({}));

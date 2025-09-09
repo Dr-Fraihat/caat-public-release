@@ -3739,6 +3739,70 @@ const clientInfo = {
            : (maybeClient?.diagnoses || ""),
   reportDate: new Date().toLocaleDateString()
 };
+// ---- ADIR Background/History collector (for independent OT reports)
+function textOrNull(x){ return (typeof x === 'string' && x.trim()) ? x.trim() : null; }
+
+// If the last payload in memory is ADIR, we can use it directly
+const adirPayload =
+  (window.generatedReportData &&
+   window.generatedReportData.meta &&
+   String(window.generatedReportData.meta.reportType).toUpperCase() === 'ADIR')
+    ? window.generatedReportData
+    : null;
+
+let adirBg = null;
+try {
+  const caseDoc = (typeof getCurrentCaseDoc === 'function') ? getCurrentCaseDoc() : null;
+  const intake  = caseDoc?.intake || {};    // intake object if available
+
+  adirBg = {
+    demographicSummary:
+      textOrNull(adirPayload?.demographicSummary) ||
+      textOrNull(intake?.background?.demographicSummary) ||
+      null,
+
+    backgroundBirth:
+      textOrNull(adirPayload?.backgroundAndBirthHistory) ||
+      textOrNull(intake?.background?.birthHistory) ||
+      null,
+
+    medicalDevelopmental:
+      textOrNull(adirPayload?.medicalAndDevelopmentalHistory) ||
+      textOrNull(intake?.medical?.narrative) ||
+      null,
+
+    developmentalBehavioral:
+      textOrNull(adirPayload?.developmentalAndBehavioralHistory) ||
+      textOrNull(intake?.developmental?.narrative) ||
+      null,
+
+    education:
+      textOrNull(adirPayload?.educationHistory) ||
+      textOrNull(intake?.education?.narrative) ||
+      null,
+
+    family:
+      textOrNull(adirPayload?.familyHistory) ||
+      textOrNull(intake?.background?.familyHistory) ||
+      null,
+
+    living:
+      textOrNull(adirPayload?.livingSituation) ||
+      textOrNull(intake?.background?.livingSituation) ||
+      null,
+
+    primaryConcerns:
+      textOrNull(adirPayload?.primaryConcerns) ||
+      (Array.isArray(intake?.concerns?.primary) ? intake.concerns.primary.join(', ') :
+       textOrNull(intake?.concerns?.narrative)) ||
+      null
+  };
+
+  // If everything is null/empty, drop the object
+  if (Object.values(adirBg).every(v => !v)) adirBg = null;
+} catch(_e) {
+  adirBg = null;
+}
 
 
   // Unified OT Core indices
@@ -3783,6 +3847,8 @@ const clientInfo = {
     client: maybeClient,
     clientInfo,                        // ← NEW (normalized demographics)
     fromIntakeSnapshot: intakeSnap,    // ← NEW (raw intake snapshot if present)
+      adirBackground: adirBg,   // <— add this line
+
     caregiverInterview: {
       primaryConcerns: _textVal("ot_primaryConcerns"),
       environments: envs,

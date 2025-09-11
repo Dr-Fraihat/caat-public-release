@@ -112,6 +112,20 @@ document.addEventListener("DOMContentLoaded", () => {
     protectedAppSection.style.display = "none";
     loginSection.style.display = "block";
   }
+  // Logout button
+const logoutBtn = document.getElementById("logoutBtn");
+if (logoutBtn) {
+  logoutBtn.addEventListener("click", async () => {
+    try {
+      await auth.signOut();     // Firebase Auth sign out
+      location.reload();        // Reset UI to login screen
+    } catch (e) {
+      console.error("Logout failed:", e);
+      alert("Logout failed: " + (e?.message || e));
+    }
+  });
+}
+
 });
 
   const secondaryLangInput = document.getElementById("secondaryLanguages");

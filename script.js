@@ -2316,20 +2316,19 @@ window.generatedReportData = reportData;
 
   doc += `
    <div class="footer">
-      American Autism Council | https://americanautismcouncil.org<br>
-      2870 E Oakland Park Blvd, Fort Lauderdale, FL 33306
-    </div>
+  Prince Mohammed Bin Salman Autism Center | Riyadh, Saudi Arabia<br> |   www.pms-autismcenter.sa
+</div>
+
   `; 
 
   doc += `
-  <div class="header" style="text-align: center; border-bottom: 1px solid #ccc; padding: 10px 0; background: white;">
-  <img src="https://i.postimg.cc/TPNDd6ZD/aac-logo.png" style="height: 60px; display: block; margin: 0 auto;" alt="AAC Logo">
-  <div style="font-size: 14px; color: #1a3e80; font-weight: bold;">
-    AMERICAN AUTISM COUNCIL FOR ACCREDITATION AND CONTINUING EDUCATION
-  </div>
-  <div style="font-size: 14px; color: #1a3e80;">
-    Comprehensive Autism Assessment Tool (CAAT)
-  </div>
+<div class="header" style="text-align: center; border-bottom: 1px solid #ccc; padding: 10px 0; background: white;">
+  <div class="brand-name">Prince Mohammed Bin Salman Autism Center</div>
+</div>
+<div style="font-size: 14px; color: #1a3e80;">
+  Comprehensive Autism Assessment Tool (CAAT)
+</div>
+
 </div>  
   <div class="info-page">
       <h2>Confidentiality Notice</h2>
@@ -2970,16 +2969,15 @@ headers: { "Content-Type": "application/json" },
       <!-- COVER PAGE -->
       <div class="cover-page">
   <div class="cover-logo">
-    <img src="https://i.postimg.cc/TPNDd6ZD/aac-logo.png" alt="AAC Logo">
-    <h2>AMERICAN AUTISM COUNCIL FOR ACCREDITATION AND CONTINUING EDUCATION</h2>
-    <h3>Comprehensive Autism Assessment Tool (CAAT)</h3>
+   <div class="report-center-title">Prince Mohammed Bin Salman Autism Center</div>
+<h3>Comprehensive Autism Assessment Tool (CAAT)</h3>
   </div>
   <div class="cover-title">Autism Diagnostic Intake Report (ADIR)</div>
   <div class="cover-subtitle">Private and Confidential</div>
 
   <!-- ✅ Add this block here -->
   <div class="footer">
-    2870 E Oakland Park Blvd Fort Lauderdale, FL 33306 *** info@americanautismcouncil.org *** www.americanautismcouncil.org
+   Prince Mohammed Bin Salman Autism Center | Riyadh, Saudi Arabia<br> |   www.pms-autismcenter.sa
   </div>
 </div>
 
@@ -3001,7 +2999,7 @@ headers: { "Content-Type": "application/json" },
 <p><strong>Date of Report:</strong> ${safeGet(data.clientInfo, "reportDate")}</p>
 
         <div class="footer">
-          2870 E Oakland Park Blvd Fort Lauderdale, FL 33306 *** info@americanautismcouncil.org *** www.americanautismcouncil.org
+          Prince Mohammed Bin Salman Autism Center | Riyadh, Saudi Arabia<br> |   www.pms-autismcenter.sa
         </div>
       </div>
 
@@ -3233,14 +3231,13 @@ const narrativeHtml = (() => {
           <!-- COVER PAGE -->
           <div class="cover-page">
             <div class="cover-logo">
-              <img src="https://i.postimg.cc/TPNDd6ZD/aac-logo.png" alt="AAC Logo">
-              <h2>AMERICAN AUTISM COUNCIL FOR ACCREDITATION AND CONTINUING EDUCATION</h2>
-              <h3>Comprehensive Autism Assessment Tool (CAAT)</h3>
+              <div class="report-center-title">Prince Mohammed Bin Salman Autism Center</div>
+<h3>Comprehensive Autism Assessment Tool (CAAT)</h3>
             </div>
             <div class="cover-title">${title}</div>
             <div class="cover-subtitle">Private and Confidential</div>
             <div class="footer">
-              2870 E Oakland Park Blvd Fort Lauderdale, FL 33306 *** info@americanautismcouncil.org *** www.americanautismcouncil.org
+              Prince Mohammed Bin Salman Autism Center | Riyadh, Saudi Arabia<br> |   www.pms-autismcenter.sa
             </div>
           </div>
 
@@ -3274,7 +3271,7 @@ const narrativeHtml = (() => {
 
 
             <div class="footer">
-              2870 E Oakland Park Blvd Fort Lauderdale, FL 33306 *** info@americanautismcouncil.org *** www.americanautismcouncil.org
+              Prince Mohammed Bin Salman Autism Center | Riyadh, Saudi Arabia<br> |   www.pms-autismcenter.sa
             </div>
           </div>
 

@@ -3247,23 +3247,17 @@ const narrativeHtml = (() => {
             <p style="text-align: justify; max-width: 700px; margin: auto;">
               The contents of this report are of a confidential and sensitive nature and should not be duplicated without the consent of the parents. The data contained herein is valid for a limited period and due to the changing and developing nature of children, the information and recommendations are meant for current use. Reference to or use of this report in future years should be made with caution.
             </p>
-
-                       ${
-  (ci && (ci.fullName || ci.name || ci.dob || ci.age || ci.ageYears || ci.gender || ci.sex || ci.educationPlacement || ci.languages || ci.diagnoses))
+${
+  (ci && (ci.fullName || ci.name || ci.dob || ci.ageYears || ci.age || ci.gender || ci.sex || ci.intakeDate || ci.caseManager || ci.reportDate))
     ? `
       <h2 style="margin-top: 40px;">Client Information</h2>
       <hr/>
       <p><strong>Name:</strong> ${ci.fullName || ci.name || ""}</p>
       <p><strong>Date of Birth:</strong> ${ci.dob || ""}</p>
+      ${ci.intakeDate ? `<p><strong>Intake Date:</strong> ${ci.intakeDate}</p>` : ""}
       <p><strong>Age at Assessment:</strong> ${ci.ageYears || ci.age || ""}</p>
       <p><strong>Gender:</strong> ${ci.gender || ci.sex || ""}</p>
-      <p><strong>Languages:</strong> ${
-        Array.isArray(ci.languages) ? ci.languages.join(", ") : (ci.languages || "")
-      }</p>
-      <p><strong>Education Placement:</strong> ${ci.educationPlacement || ""}</p>
-      <p><strong>Diagnoses:</strong> ${
-        Array.isArray(ci.diagnoses) ? ci.diagnoses.join(", ") : (ci.diagnoses || "")
-      }</p>
+      ${ci.caseManager ? `<p><strong>Reported By:</strong> ${ci.caseManager}</p>` : ""}
       <p><strong>Date of Report:</strong> ${ci.reportDate || new Date().toLocaleDateString()}</p>
     `
     : ''

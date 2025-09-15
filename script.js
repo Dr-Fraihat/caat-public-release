@@ -71,6 +71,95 @@ function addRow(tableId) {
   newRow.querySelectorAll("input").forEach(input => input.value = "");
   tbody.appendChild(newRow);
 }
+// ========= Persistent Form State (per user) =========
+const FORM_STATE_VERSION = 'v1'; // bump if your form structure changes
+
+function stateKey(uid) {
+  // one key for everything under the protected app (ADIR + Assessments)
+  return `caat.formstate.${FORM_STATE_VERSION}.${uid || 'anon'}`;
+}
+
+// Save all inputs/selects/textareas inside the protected section
+function saveFormState(uid) {
+  const root = document.getElementById('protectedAppSection');
+  if (!root) return;
+  const data = { t: Date.now(), v: FORM_STATE_VERSION, fields: {} };
+
+  const fields = root.querySelectorAll('input, select, textarea');
+  fields.forEach((el) => {
+    const tag = el.tagName.toLowerCase();
+    const type = (el.type || '').toLowerCase();
+
+    // build a stable key (prefer id; else name+index)
+    let key = el.id || el.name;
+    if (!key) return;
+
+    if (tag === 'input' && (type === 'checkbox' || type === 'radio')) {
+      // store checked state keyed by name+value to support groups
+      key = `${el.name}::${el.value}`;
+      data.fields[key] = el.checked ? 1 : 0;
+    } else {
+      data.fields[key] = el.value ?? '';
+    }
+  });
+
+  try {
+    localStorage.setItem(stateKey(uid), JSON.stringify(data));
+  } catch (e) {
+    console.warn('saveFormState failed:', e);
+  }
+}
+
+function loadFormState(uid) {
+  const root = document.getElementById('protectedAppSection');
+  if (!root) return;
+  const raw = localStorage.getItem(stateKey(uid));
+  if (!raw) return;
+
+  let data;
+  try { data = JSON.parse(raw); } catch { return; }
+  if (!data || !data.fields) return;
+
+  const fields = root.querySelectorAll('input, select, textarea');
+  fields.forEach((el) => {
+    const tag = el.tagName.toLowerCase();
+    const type = (el.type || '').toLowerCase();
+    let key = el.id || el.name;
+    if (!key) return;
+
+    if (tag === 'input' && (type === 'checkbox' || type === 'radio')) {
+      key = `${el.name}::${el.value}`;
+      if (key in data.fields) el.checked = !!data.fields[key];
+    } else if (key in data.fields) {
+      el.value = data.fields[key];
+    }
+
+    // fire change handlers so your show/hide logic renders correctly
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+    if (tag !== 'select') el.dispatchEvent(new Event('input', { bubbles: true }));
+  });
+}
+
+function clearFormState(uid, alsoClearUI = false) {
+  localStorage.removeItem(stateKey(uid));
+  if (!alsoClearUI) return;
+
+  // Optional: wipe all visible fields
+  const root = document.getElementById('protectedAppSection');
+  if (!root) return;
+  const fields = root.querySelectorAll('input, select, textarea');
+  fields.forEach((el) => {
+    const tag = el.tagName.toLowerCase();
+    const type = (el.type || '').toLowerCase();
+    if (tag === 'input' && (type === 'checkbox' || type === 'radio')) {
+      el.checked = false;
+    } else {
+      el.value = '';
+    }
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+    if (tag !== 'select') el.dispatchEvent(new Event('input', { bubbles: true }));
+  });
+}
 
 document.addEventListener("DOMContentLoaded", () => {
   firebase.auth().onAuthStateChanged((user) => {
@@ -107,6 +196,19 @@ document.addEventListener("DOMContentLoaded", () => {
     // ✅ Admin access allowed
     protectedAppSection.style.display = "block";
     loginSection.style.display = "none";
+    // ---- Load saved form for this user
+loadFormState(user.uid);
+
+// ---- Start auto-saving on change/input (debounced)
+const root = document.getElementById('protectedAppSection');
+let __formSaveTimer = null;
+function __queueSave() {
+  clearTimeout(__formSaveTimer);
+  __formSaveTimer = setTimeout(() => saveFormState(user.uid), 350);
+}
+root.addEventListener('input', __queueSave, true);
+root.addEventListener('change', __queueSave, true);
+
   } else {
     // Not logged in
     protectedAppSection.style.display = "none";
@@ -123,6 +225,16 @@ if (logoutBtn) {
       console.error("Logout failed:", e);
       alert("Logout failed: " + (e?.message || e));
     }
+  });
+}
+// Reset button (clears local data + UI)
+const resetBtn = document.getElementById('resetFormBtn');
+if (resetBtn) {
+  resetBtn.addEventListener('click', () => {
+    const ok = confirm("This will clear all locally saved form data on this device. Continue?");
+    if (!ok) return;
+    clearFormState(user?.uid, /* alsoClearUI */ true);
+    alert('All locally saved data cleared.');
   });
 }
 
@@ -2316,14 +2428,14 @@ window.generatedReportData = reportData;
 
   doc += `
    <div class="footer">
-  Prince Mohammed Bin Salman Autism Center | Riyadh, Saudi Arabia<br> |   www.pms-autismcenter.sa
+  Dr. Muhannad Fraihat | Riyadh, Saudi Arabia<br> |
 </div>
 
   `; 
 
   doc += `
 <div class="header" style="text-align: center; border-bottom: 1px solid #ccc; padding: 10px 0; background: white;">
-  <div class="brand-name">Prince Mohammed Bin Salman Autism Center</div>
+  <div class="brand-name">Dr. Muhannad Fraihat</div>
 </div>
 <div style="font-size: 14px; color: #1a3e80;">
   Comprehensive Autism Assessment Tool (CAAT)
@@ -2969,7 +3081,7 @@ headers: { "Content-Type": "application/json" },
       <!-- COVER PAGE -->
       <div class="cover-page">
   <div class="cover-logo">
-   <div class="report-center-title">Prince Mohammed Bin Salman Autism Center</div>
+   <div class="report-center-title">Dr. Muhannad Fraihat</div>
 <h3>Comprehensive Autism Assessment Tool (CAAT)</h3>
   </div>
   <div class="cover-title">Autism Diagnostic Intake Report (ADIR)</div>
@@ -2977,7 +3089,7 @@ headers: { "Content-Type": "application/json" },
 
   <!-- ✅ Add this block here -->
   <div class="footer">
-   Prince Mohammed Bin Salman Autism Center | Riyadh, Saudi Arabia<br> |   www.pms-autismcenter.sa
+   Dr. Muhannad Fraihat | Riyadh, Saudi Arabia<br> |
   </div>
 </div>
 
@@ -2999,7 +3111,7 @@ headers: { "Content-Type": "application/json" },
 <p><strong>Date of Report:</strong> ${safeGet(data.clientInfo, "reportDate")}</p>
 
         <div class="footer">
-          Prince Mohammed Bin Salman Autism Center | Riyadh, Saudi Arabia<br> |   www.pms-autismcenter.sa
+          Dr. Muhannad Fraihat | Riyadh, Saudi Arabia<br> |
         </div>
       </div>
 
@@ -3231,13 +3343,13 @@ const narrativeHtml = (() => {
           <!-- COVER PAGE -->
           <div class="cover-page">
             <div class="cover-logo">
-              <div class="report-center-title">Prince Mohammed Bin Salman Autism Center</div>
+              <div class="report-center-title">Dr. Muhannad Fraihat</div>
 <h3>Comprehensive Autism Assessment Tool (CAAT)</h3>
             </div>
             <div class="cover-title">${title}</div>
             <div class="cover-subtitle">Private and Confidential</div>
             <div class="footer">
-              Prince Mohammed Bin Salman Autism Center | Riyadh, Saudi Arabia<br> |   www.pms-autismcenter.sa
+              Dr. Muhannad Fraihat | Riyadh, Saudi Arabia<br> |
             </div>
           </div>
 
@@ -3265,7 +3377,7 @@ ${
 
 
             <div class="footer">
-              Prince Mohammed Bin Salman Autism Center | Riyadh, Saudi Arabia<br> |   www.pms-autismcenter.sa
+              | Riyadh, Saudi Arabia<br> |
             </div>
           </div>
 

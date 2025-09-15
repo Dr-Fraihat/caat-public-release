@@ -112,6 +112,20 @@ document.addEventListener("DOMContentLoaded", () => {
     protectedAppSection.style.display = "none";
     loginSection.style.display = "block";
   }
+  // Logout button
+const logoutBtn = document.getElementById("logoutBtn");
+if (logoutBtn) {
+  logoutBtn.addEventListener("click", async () => {
+    try {
+      await auth.signOut();     // Firebase Auth sign out
+      location.reload();        // Reset UI to login screen
+    } catch (e) {
+      console.error("Logout failed:", e);
+      alert("Logout failed: " + (e?.message || e));
+    }
+  });
+}
+
 });
 
   const secondaryLangInput = document.getElementById("secondaryLanguages");
@@ -1641,11 +1655,13 @@ if (langLabel) langLabel.textContent = translations[lang].selectLanguage;
 
 function generateFullIntakeReport() {
   const container = document.getElementById("intakeReportContainer");
-if (!container) {
-  alert("Report container not found!");
-  return;
-}
-let doc = "";
+  if (!container) {
+    alert("Report container not found!");
+    return;
+  }
+  container.style.display = "block";  // ✅ make it visible
+  let doc = "";
+
 
   const get = (id) => document.getElementById(id)?.value.trim() || "";
   const today = new Date().toLocaleDateString();
@@ -2240,10 +2256,13 @@ let reportData = {
     obs_cooperation_attention,
     obs_strengths,
     obs_concerns
-  }
+  },
+  // === NEW: OT Core (Unified) ===
+  otCore: (window.__OTCore_collect ? window.__OTCore_collect() : null)
 };
 
 window.generatedReportData = reportData;
+
   doc += `
   <div id="generatedReport" style="padding: 40px; font-family: Arial, sans-serif;">
     <style>
@@ -2297,20 +2316,19 @@ window.generatedReportData = reportData;
 
   doc += `
    <div class="footer">
-      American Autism Council | https://americanautismcouncil.org<br>
-      2870 E Oakland Park Blvd, Fort Lauderdale, FL 33306
-    </div>
+  Dr. Muhannad Fraihat | Riyadh, Saudi Arabia<br> |
+</div>
+
   `; 
 
   doc += `
-  <div class="header" style="text-align: center; border-bottom: 1px solid #ccc; padding: 10px 0; background: white;">
-  <img src="https://i.postimg.cc/TPNDd6ZD/aac-logo.png" style="height: 60px; display: block; margin: 0 auto;" alt="AAC Logo">
-  <div style="font-size: 14px; color: #1a3e80; font-weight: bold;">
-    AMERICAN AUTISM COUNCIL FOR ACCREDITATION AND CONTINUING EDUCATION
-  </div>
-  <div style="font-size: 14px; color: #1a3e80;">
-    Comprehensive Autism Assessment Tool (CAAT)
-  </div>
+<div class="header" style="text-align: center; border-bottom: 1px solid #ccc; padding: 10px 0; background: white;">
+  <div class="brand-name">Dr. Muhannad Fraihat</div>
+</div>
+<div style="font-size: 14px; color: #1a3e80;">
+  Comprehensive Autism Assessment Tool (CAAT)
+</div>
+
 </div>  
   <div class="info-page">
       <h2>Confidentiality Notice</h2>
@@ -2820,23 +2838,28 @@ function evaluateDSM5(data) {
 async function generateNarrativeReport() {
   showLoading();
 
+  // Always regenerate intake data before AI step
+  generateFullIntakeReport();
+
   const data = window.generatedReportData;
   if (!data) {
-    alert("Please generate the full intake report first.");
+    alert("Something went wrong. Could not generate report data.");
+    hideLoading();
     return;
   }
 
- const selectedLang = document.getElementById("reportLanguage").value;
- const isArabic = selectedLang === "ar";
-
-const selectedLangs = [selectedLang];
+  const selectedLang = document.getElementById("reportLanguage").value;
+  const selectedLangs = [selectedLang];
 
 try {
-  const response = await fetch("https://caat-backend.onrender.com/generate-report", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ data, languages: selectedLangs })
-  });
+  const url = `${API_BASE}/generate-report?template=adir`;
+const response = await fetch(url, {
+  method: "POST",
+headers: { "Content-Type": "application/json" },
+
+  body: JSON.stringify({ data, languages: selectedLangs })
+});
+
 
   if (!response.ok) {
     alert("Failed to generate narrative report.");
@@ -2946,16 +2969,15 @@ try {
       <!-- COVER PAGE -->
       <div class="cover-page">
   <div class="cover-logo">
-    <img src="https://i.postimg.cc/TPNDd6ZD/aac-logo.png" alt="AAC Logo">
-    <h2>AMERICAN AUTISM COUNCIL FOR ACCREDITATION AND CONTINUING EDUCATION</h2>
-    <h3>Comprehensive Autism Assessment Tool (CAAT)</h3>
+   <div class="report-center-title">Dr. Muhannad Fraihat</div>
+<h3>Comprehensive Autism Assessment Tool (CAAT)</h3>
   </div>
   <div class="cover-title">Autism Diagnostic Intake Report (ADIR)</div>
   <div class="cover-subtitle">Private and Confidential</div>
 
   <!-- ✅ Add this block here -->
   <div class="footer">
-    2870 E Oakland Park Blvd Fort Lauderdale, FL 33306 *** info@americanautismcouncil.org *** www.americanautismcouncil.org
+   Dr. Muhannad Fraihat | Riyadh, Saudi Arabia<br> |
   </div>
 </div>
 
@@ -2977,20 +2999,11 @@ try {
 <p><strong>Date of Report:</strong> ${safeGet(data.clientInfo, "reportDate")}</p>
 
         <div class="footer">
-          2870 E Oakland Park Blvd Fort Lauderdale, FL 33306 *** info@americanautismcouncil.org *** www.americanautismcouncil.org
+          Dr. Muhannad Fraihat | Riyadh, Saudi Arabia<br> |
         </div>
       </div>
 
-      <!-- MAIN NARRATIVE REPORT -->
-      <div class="narrative-body">
-        ${result.report
-  .trim()
-  .split(/\n{2,}/)  // Split by double line breaks (paragraphs)
-  .map(paragraph => `<p>${paragraph.trim()}</p>`)
-  .join("")}
-
-
-      </div>
+      
     </body>
   </html>
   `);
@@ -3008,209 +3021,259 @@ try {
 function safeGet(obj, key) {
   return obj?.[key] || "Not provided";
 }
+// Pick backend by environment
+const API_BASE =
+  (location.hostname === '127.0.0.1' || location.hostname === 'localhost')
+    ? 'http://localhost:5000'                // local backend (when you run it)
+    : 'https://caat-backend.onrender.com';   // Render backend (deployed)
 
 async function generateAIReportDirect() {
   showLoading();
 
   try {
-    generateFullIntakeReport();
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    // If this is NOT the OT path, rebuild the ADIR payload before calling AI
+    const isOT =
+      !!(window.generatedReportData && window.generatedReportData.meta && String(window.generatedReportData.meta.reportType).toUpperCase() === 'OT');
 
-    const data = window.generatedReportData;
-    if (!data) {
-      hideLoading();
-      alert("Something went wrong. Could not generate report data.");
-      return;
+    if (!isOT) {
+      // ADIR flow still uses the intake report structure
+      generateFullIntakeReport();
+      await new Promise((r) => setTimeout(r, 200));
     }
 
+    // Payload prepared by caller:
+    // - ADIR: window.generatedReportData (from generateFullIntakeReport)
+    // - OT:   window.generatedReportData (from buildOTNarrativeData) with meta.reportType="OT"
+    const payload = window.generatedReportData || {};
+
+    // Language (keep your behavior)
     const selectedLang = document.getElementById("reportLanguage")?.value || "en";
-const selectedLangs = [selectedLang];
+    const reportType = (payload.meta && payload.meta.reportType)
+      ? String(payload.meta.reportType).toUpperCase()
+      : 'ADIR';
+
+    const templateParam = reportType === 'OT' ? 'ot' : 'adir';
+    const url = `${API_BASE}/generate-report?template=${encodeURIComponent(templateParam)}`;
+
+    // Backward-compatible body:
+    //  - For ADIR we keep the old { data, languages } envelope
+    //  - For OT we send the OT payload itself (plus languages)
+    const body = (reportType === 'OT')
+      ? { ...payload, languages: [selectedLang] }
+      : { data: payload, languages: [selectedLang] };
+console.log('[AI] url =', url, 'reportType =', reportType, 'body.meta =', body.meta || (body.data && body.data.meta));
+
+    const res = await fetch(url, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(body)
+});
 
 
-    if (selectedLangs.length === 0) {
-      hideLoading();
-      alert("Please select at least one language for the AI report.");
-      return;
-    }
-
-    const response = await fetch("https://caat-backend.onrender.com/generate-report", {
-
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ data, languages: selectedLangs })
-    });
-
-    if (!response.ok) {
-      hideLoading();
-      alert("Failed to generate narrative report.");
-      return;
-    }
-
-    const result = await response.json();
-    const newWin = window.open("", "_blank");
-if (!newWin) {
-  alert("Popup was blocked. Please allow popups for this site to view the report.");
-  hideLoading();
-  return;
+   if (res.status === 429) {
+  const data = await res.json().catch(() => ({}));
+  alert(
+    "OpenAI quota/rate limit reached.\n\n" +
+    (data?.detail || "Please add billing or raise your monthly limit, then try again.")
+  );
+  return; // stop here; keep spinner cleanup in finally{}
 }
 
+if (!res.ok) {
+  const text = await res.text().catch(()=> '');
+  throw new Error(`Backend ${res.status} ${res.statusText}${text ? ' — ' + text : ''}`);
+}
+
+    const result = await res.json();
+console.log('[AI] server templateUsed =', result.templateUsed);
+if ((reportType === 'OT' && result.templateUsed !== 'ot') ||
+    (reportType !== 'OT' && result.templateUsed !== 'adir')) {
+  alert(`Template mismatch: asked for ${reportType} but server used ${result.templateUsed}. Check logs.`);
+}
+
+    // === Render the narrative in a new window (keeps your existing UX) ===
+    const newWin = window.open('', '_blank');
+    if (!newWin) {
+      alert('Popup was blocked. Please allow popups for this site to view the report.');
+      return;
+    }
+
+    const title = reportType === 'OT'
+      ? 'Occupational Therapy Evaluation Report'
+      : 'Autism Diagnostic Intake Report (ADIR)';
+
+    // Convert AI text → blue H2 headings + paragraphs (ADIR style) using a whitelist
+const narrativeHtml = (() => {
+  const raw = (result.report || '').replace(/\r\n/g, '\n').trim();
+
+  // Only these lines are allowed to become headings (case-insensitive; colon/asterisks optional)
+  const HEADINGS = new Set([
+    'Demographic Summary',
+    'Background & Referral Context',
+    'Occupational Profile & Daily Routines',
+    'Sensory Profile',
+    'Motor Skills (Fine / Visual-Motor)',
+    'Motor Skills (Gross / Praxis)',
+    'ADLs & Participation',
+    'Executive Function & Self-Regulation',
+    'Feeding & Oral-Motor',
+    'Risk & Safety',
+    'Clinical Observations',
+    'Strengths & Barriers',
+    'Caregiver Priorities (COPM)',
+    'Goals & Plan',
+    'Recommendations'
+  ].map(s => s.toLowerCase()));
+
+  // Normalize lines, drop empties
+  const lines = raw.split('\n').map(s => s.trim()).filter(Boolean);
+
+  const out = [];
+  let buf = [];
+
+  const flush = () => { if (buf.length) { out.push(`<p>${buf.join(' ')}</p>`); buf = []; } };
+
+  // Helper: strip ** … ** and trailing :
+  const clean = s => s
+    .replace(/^[“”"']+/, '').replace(/[”"']+$/, '')
+    .replace(/^\*{1,2}\s*/, '').replace(/\s*\*{1,2}$/, '')
+    .replace(/:$/, '')
+    .trim();
+
+  for (const line of lines) {
+    const s = line.replace(/^[“”"']+/, '').replace(/[”"']+$/, '').trim();
+
+    // If the whole line is a short title (with/without ** and :), and it's in our whitelist → heading
+    const maybeTitle = clean(s);
+    const isShort = maybeTitle.length <= 80 && !/\.\s*$/.test(maybeTitle); // not a sentence
+    if (isShort && HEADINGS.has(maybeTitle.toLowerCase())) {
+      flush();
+      out.push(`<h2 class="report-h2">${maybeTitle}</h2>`);
+      continue;
+    }
+
+    // If it's a "Title: paragraph" line and the title is whitelisted → heading + paragraph
+    const m = s.match(/^(.+?):\s+(.+)$/s);
+    if (m) {
+      const title = clean(m[1]);
+      if (HEADINGS.has(title.toLowerCase())) {
+        flush();
+        out.push(`<h2 class="report-h2">${title}</h2>`);
+        buf.push(m[2].trim());
+        continue;
+      }
+    }
+
+    // Otherwise it's normal text (part of current paragraph)
+    buf.push(s.replace(/^\*{1,2}|\*{1,2}$/g, ''));
+  }
+  flush();
+  return out.join('');
+})();
+
+
+
+
+
+
+    // For ADIR we append the DSM-5 evaluation you already compute; OT doesn’t use it.
+    const postAppend = (reportType === 'ADIR')
+      ? (typeof evaluateDSM5 === 'function' ? evaluateDSM5(payload) : '')
+      : '';
+    const ci = payload.clientInfo || payload.client || payload.fromIntakeSnapshot || {};
 
     newWin.document.write(`
       <html>
         <head>
-          <title>Autism Diagnostic Intake Report (ADIR)</title>
+          <title>${title}</title>
           <style>
-            body {
-              font-family: Arial, sans-serif;
-              margin: 0;
-              padding: 0;
-            }
+            body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+            @page { margin: 2.5cm 2cm; }
+            .cover-page { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; page-break-after: always; }
+            .cover-logo { text-align: center; margin-bottom: 40px; }
+            .cover-logo img { height: 80px; }
+            .cover-logo h2 { font-size: 16px; color: #1a3e80; font-weight: bold; margin: 10px 0 0; }
+            .cover-logo h3 { font-size: 14px; color: #1a3e80; font-weight: normal; }
+            .cover-title { font-size: 36px; font-weight: bold; color: red; margin-bottom: 10px; }
+            .cover-subtitle { font-size: 20px; color: red; }
+            .info-page { page-break-after: always; padding: 3cm 2cm; }
+            .info-page h2 { text-align: center; color: #1a3e80; margin-bottom: 20px; }
+            .info-page p { font-size: 14px; line-height: 1.6; }
+            .footer { text-align: center; font-size: 12px; color: #1a3e80; margin-top: 40px; border-top: 1px solid #ccc; padding-top: 10px; }
+          /* force body text to black in both OT & ADIR reports */
+/* 1) Reset all narrative text to black (including strong/em, spans, etc.) */
+.narrative-body, .narrative-body * {
+  color:#000 !important;
+  font-family: Arial, sans-serif !important;
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+  font-weight: 400 !important;       /* default to normal */
+}
 
-            @page {
-              margin: 2.5cm 2cm;
-            }
+.info-page, .info-page * { color:#000 !important; }
 
-            .cover-page {
-              height: 100vh;
-              display: flex;
-              flex-direction: column;
-              justify-content: center;
-              align-items: center;
-              text-align: center;
-              page-break-after: always;
-            }
+/* 2) Headings stay blue — put this AFTER the reset so it wins */
+.narrative-body h1,
+.narrative-body h2,
+.narrative-body h3,
+.narrative-body h4,
+.narrative-body h5,
+.narrative-body h6,
+.report-h2 { color:#1a3e80 !important; font-weight:600; }
+/* Keep bold text black in body paragraphs */
+.narrative-body b, .narrative-body strong { color:#000 !important; font-weight:600 !important; }
+/* 3) Body paragraph spacing/justification (no color here) */
+.narrative-body p { margin: 0 0 1em 0; line-height: 1.6; text-align: justify; }
 
-            .cover-logo {
-              text-align: center;
-              margin-bottom: 40px;
-            }
-
-            .cover-logo img {
-              height: 80px;
-            }
-
-            .cover-logo h2 {
-              font-size: 16px;
-              color: #1a3e80;
-              font-weight: bold;
-              margin: 10px 0 0;
-            }
-
-            .cover-logo h3 {
-              font-size: 14px;
-              color: #1a3e80;
-              font-weight: normal;
-            }
-
-            .cover-title {
-              font-size: 36px;
-              font-weight: bold;
-              color: red;
-              margin-bottom: 10px;
-            }
-
-            .cover-subtitle {
-              font-size: 20px;
-              color: red;
-            }
-
-            .info-page {
-              page-break-after: always;
-              padding: 3cm 2cm;
-            }
-
-            .info-page h2 {
-              text-align: center;
-              color: #1a3e80;
-              margin-bottom: 20px;
-            }
-
-            .info-page p {
-              font-size: 14px;
-              line-height: 1.6;
-            }
-
-            .footer {
-              text-align: center;
-              font-size: 12px;
-              color: #1a3e80;
-              margin-top: 40px;
-              border-top: 1px solid #ccc;
-              padding-top: 10px;
-            }
-
-            .narrative-body {
-              padding: 3cm 2cm;
-              font-size: 14px;
-              page-break-before: always;
-            }
-
-            .narrative-body p {
-              margin: 0 0 1em 0;
-              line-height: 1.6;
-              text-align: justify;
-            }
           </style>
         </head>
         <body>
           <!-- COVER PAGE -->
           <div class="cover-page">
             <div class="cover-logo">
-              <img src="https://i.postimg.cc/TPNDd6ZD/aac-logo.png" alt="AAC Logo">
-              <h2>AMERICAN AUTISM COUNCIL FOR ACCREDITATION AND CONTINUING EDUCATION</h2>
-              <h3>Comprehensive Autism Assessment Tool (CAAT)</h3>
+              <div class="report-center-title">Dr. Muhannad Fraihat</div>
+<h3>Comprehensive Autism Assessment Tool (CAAT)</h3>
             </div>
-            <div class="cover-title">Autism Diagnostic Intake Report (ADIR)</div>
+            <div class="cover-title">${title}</div>
             <div class="cover-subtitle">Private and Confidential</div>
-
             <div class="footer">
-              2870 E Oakland Park Blvd Fort Lauderdale, FL 33306 *** info@americanautismcouncil.org *** www.americanautismcouncil.org
+              Dr. Muhannad Fraihat | Riyadh, Saudi Arabia<br> |
             </div>
           </div>
 
-          <!-- INFO PAGE -->
+          <!-- INFO PAGE (ADIR shows full client info; OT shows if provided) -->
           <div class="info-page">
             <h2>Confidentiality Notice</h2>
             <p style="text-align: justify; max-width: 700px; margin: auto;">
               The contents of this report are of a confidential and sensitive nature and should not be duplicated without the consent of the parents. The data contained herein is valid for a limited period and due to the changing and developing nature of children, the information and recommendations are meant for current use. Reference to or use of this report in future years should be made with caution.
             </p>
+${
+  (ci && (ci.fullName || ci.name || ci.dob || ci.ageYears || ci.age || ci.gender || ci.sex || ci.intakeDate || ci.caseManager || ci.reportDate))
+    ? `
+      <h2 style="margin-top: 40px;">Client Information</h2>
+      <hr/>
+      <p><strong>Name:</strong> ${ci.fullName || ci.name || ""}</p>
+      <p><strong>Date of Birth:</strong> ${ci.dob || ""}</p>
+      ${ci.intakeDate ? `<p><strong>Intake Date:</strong> ${ci.intakeDate}</p>` : ""}
+      <p><strong>Age at Assessment:</strong> ${ci.ageYears || ci.age || ""}</p>
+      <p><strong>Gender:</strong> ${ci.gender || ci.sex || ""}</p>
+      ${ci.caseManager ? `<p><strong>Reported By:</strong> ${ci.caseManager}</p>` : ""}
+      <p><strong>Date of Report:</strong> ${ci.reportDate || new Date().toLocaleDateString()}</p>
+    `
+    : ''
+}
 
-            <h2 style="margin-top: 40px;">Client Information</h2>
-            <hr/>
-            <p><strong>Name:</strong> ${data.clientInfo.fullName}</p>
-            <p><strong>Date of Birth:</strong> ${data.clientInfo.dob}</p>
-            <p><strong>Intake Date:</strong> ${data.clientInfo.intakeDate}</p>
-            <p><strong>Age at Assessment:</strong> ${data.clientInfo.age}</p>
-            <p><strong>Gender:</strong> ${data.clientInfo.gender}</p>
-            <p><strong>Reported By:</strong> ${data.clientInfo.caseManager}</p>
-            <p><strong>Date of Report:</strong> ${data.clientInfo.reportDate}</p>
 
             <div class="footer">
-              2870 E Oakland Park Blvd Fort Lauderdale, FL 33306 *** info@americanautismcouncil.org *** www.americanautismcouncil.org
+              | Riyadh, Saudi Arabia<br> |
             </div>
           </div>
 
           <!-- NARRATIVE -->
-         <div class="narrative-body">
-  ${result.report
-    .trim()
-    .split(/\n{2,}/)                         // Split by empty lines (double \n)
-    .map(paragraph => `<p>${paragraph.trim()}</p>`)
-    .join("")}
-  ${evaluateDSM5(data)}
-</div>
-
-<!-- SIGNATURE SECTION -->
-<div style="padding: 3cm 2cm; font-size: 14px; margin-top: 60px;">
-  <h2 style="color:#1a3e80; font-size:20px; border-bottom: 1px solid #aaa;">Signature</h2>
-  <p><strong>Case Manager Name:</strong> ${safeGet(data.clientInfo, "caseManager")}</p>
-<p><strong>Case Manager Signature:</strong> ${safeGet(data.clientInfo, "caseManagerSignature")}</p>
-<p><strong>Date:</strong> ${safeGet(data.clientInfo, "reportDate")}</p>
-  <br>
-  <p>This report has been reviewed and signed by the responsible clinician to affirm the accuracy and completeness of the information presented.</p>
-</div>
-
-
+          <div class="narrative-body report-root">
+            ${narrativeHtml}
+            ${postAppend}
+          </div>
         </body>
       </html>
     `);
@@ -3218,11 +3281,12 @@ if (!newWin) {
     newWin.document.close();
   } catch (err) {
     console.error(err);
-    alert("An error occurred while generating the AI report.");
+    alert("An error occurred while generating the AI report.\n\n" + (err?.message || err));
   } finally {
     hideLoading();
   }
 }
+
 document.addEventListener("DOMContentLoaded", () => {
   const yearSpan = document.getElementById("copyrightYear");
   if (yearSpan) {
@@ -3307,6 +3371,7 @@ document.getElementById("resetForm").addEventListener("submit", function(e) {
 // Expose all necessary functions globally (must be last lines in script.js)
 window.generateNarrativeReport = generateNarrativeReport;
 window.generateFullIntakeReport = generateFullIntakeReport;
+window.generateAIReportDirect = generateAIReportDirect;
 window.openSignupModal = openSignupModal;
 window.closeSignupModal = closeSignupModal;
 window.openResetModal = openResetModal;
@@ -3317,6 +3382,8 @@ window.addRow = addRow;
 window.toggleDisplay = toggleDisplay;
 window.toggleOtherField = toggleOtherField;
 window.toggleHouseholdFields = toggleHouseholdFields;
+window.showMainTab = showMainTab;
+
 function showMainTab(tabName) {
   const adir = document.getElementById("adirTabs");
   const comprehensive = document.getElementById("comprehensiveTabs");
@@ -3335,3 +3402,739 @@ function showMainTab(tabName) {
     btnAdir.classList.remove("active");
   }
 }
+// Fix: Hide active ADIR tab when switching to Comprehensive tab
+window.showMainTab = function(tabName) {
+  const adirTabs = document.getElementById("adirTabs");
+  const comprehensiveTabs = document.getElementById("comprehensiveTabs");
+  const signSubmit = document.getElementById("signSubmitReport");
+
+  // Hide all tab-content inside ADIR
+  document.querySelectorAll("#adirTabs .tab-content").forEach(el => el.classList.remove("active"));
+  document.querySelectorAll("#adirTabs .tab").forEach(el => el.classList.remove("active"));
+
+  // Hide Observation Notes explicitly
+  const observation = document.getElementById("observationnotes");
+  if (observation) observation.classList.remove("active");
+
+  // Hide Sign & Submit
+  if (signSubmit) signSubmit.style.display = "none";
+
+  if (tabName === "adir") {
+    adirTabs.style.display = "block";
+    comprehensiveTabs.style.display = "none";
+    document.getElementById("btnAdir").classList.add("active");
+    document.getElementById("btnComprehensive").classList.remove("active");
+
+    // Show first ADIR tab (hardcoded to "demographic" if exists)
+    const firstTab = document.querySelector('#adirTabs .tab[data-tab="demographic"]');
+    const firstContent = document.getElementById("demographic");
+    if (firstTab && firstContent) {
+      firstTab.classList.add("active");
+      firstContent.classList.add("active");
+    }
+
+    if (signSubmit) signSubmit.style.display = "block";
+
+  } else {
+    adirTabs.style.display = "none";
+    comprehensiveTabs.style.display = "block";
+    document.getElementById("btnAdir").classList.remove("active");
+    document.getElementById("btnComprehensive").classList.add("active");
+
+    // Hide any remaining ADIR tab-content and tabs again (reapply)
+    document.querySelectorAll("#adirTabs .tab-content").forEach(el => el.classList.remove("active"));
+    document.querySelectorAll("#adirTabs .tab").forEach(el => el.classList.remove("active"));
+
+    // Explicitly hide Observation Notes again
+    if (observation) observation.classList.remove("active");
+
+    // Reset Comprehensive to default tab
+    document.querySelectorAll("#comprehensiveTabs .tab-content").forEach(el => el.classList.remove("active"));
+    document.querySelectorAll("#comprehensiveTabs .tab").forEach(el => el.classList.remove("active"));
+    const firstTab = comprehensiveTabs.querySelector(".tab");
+    const firstContentId = firstTab?.getAttribute("data-tab");
+    const firstContent = firstContentId && document.getElementById(firstContentId);
+    if (firstTab && firstContent) {
+      firstTab.classList.add("active");
+      firstContent.classList.add("active");
+    }
+  }
+};
+// === Bind the AI button (module-safe) ===
+document.addEventListener("DOMContentLoaded", () => {
+  const aiBtn = document.getElementById("generateAiBtn");
+  if (aiBtn) {
+    aiBtn.addEventListener("click", async (e) => {
+      e.preventDefault();           // stop form submit/reload
+      showLoading();
+      generateFullIntakeReport();
+      await generateAIReportDirect();
+    });
+  }
+    // === OT CORE INIT (ADD THIS) ===
+  const otCoreHost = document.getElementById('ot-core-form');
+  if (otCoreHost && window.__OTCore_init) {
+    window.__OTCore_init();
+  }
+  // === OT ONLY: bind the page button ===
+  const otBtn = document.getElementById('generateOTBtn');
+  if (otBtn) {
+    otBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      showLoading();
+      await generateOTNarrativeDirect();   // defined at file end in Step 4A #3
+    });
+  }
+  // === Expanded OT sections (COPM + GAS etc.) ===
+  if (window.__OTX_init) {
+    window.__OTX_init();
+  }
+
+});
+/* ======================= CAAT-OT CORE (Unified Form) ======================= */
+(function(){
+
+  // 0–4 scale used across domains
+  const SCALE = [
+    { v: 0, label: "Never" },
+    { v: 1, label: "Rarely" },
+    { v: 2, label: "Sometimes" },
+    { v: 3, label: "Often" },
+    { v: 4, label: "Always" }
+  ];
+
+  // Domain lists (v1). Each subdomain gets a single 0–4 rating + notes.
+  const OTCORE = {
+    Sensory: ["Auditory","Visual","Tactile","Vestibular","Proprioception","Oral","Interoception"],
+    "Motor – Fine": ["Grasp/Release","In-hand Manipulation","Bilateral Coordination","Visual Motor / Handwriting"],
+    "Motor – Gross": ["Postural Control","Balance","Praxis","Strength/Endurance"],
+    "ADL/Participation": ["Feeding","Dressing (Upper)","Dressing (Lower)","Toileting","Grooming/Hygiene","Bathing/Showering","Sleep","Play/Leisure","School/Participation"],
+    "Adaptive Behavior": ["Communication","Daily Living","Socialization"]
+  };
+
+  // Safe accessors
+  function getCase(){ return (typeof getCurrentCaseDoc === 'function')
+      ? getCurrentCaseDoc()
+      : (window.__CURRENT_CASE__ = (window.__CURRENT_CASE__ || {})); }
+  function ensureOTA(){ const c = getCase(); c.otAssessment = c.otAssessment || {}; return c.otAssessment; }
+  function $(id){ return document.getElementById(id); }
+  function el(html){ const d=document.createElement('div'); d.innerHTML=html.trim(); return d.firstChild; }
+  function escapeHTML(s){ return (s??"").toString().replace(/[&<>"']/g,m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])); }
+
+  // Renders one section (table of subdomains)
+  function section(label, subs, key){
+    const rows = subs.map(sub=>{
+      const id = `otc_${key}_${sub}`.replace(/[^\w]/g,'_');
+      const opts = SCALE.map(o=>`<option value="${o.v}">${o.label}</option>`).join('');
+      return `<tr>
+        <td>${sub}</td>
+        <td>
+          <select class="otcore-rate" id="${id}" data-group="${key}" data-sub="${sub}">
+            <option value="" selected>--</option>${opts}
+          </select>
+        </td>
+        <td><input class="otcore-notes" data-for="${id}" placeholder="Notes"></td>
+      </tr>`;
+    }).join('');
+    return `
+      <div class="card p-12 mb-12">
+        <h4>${label}</h4>
+        <table class="table">
+          <thead><tr><th>Domain</th><th>Rating</th><th>Notes</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+  }
+
+  function renderOTCoreForm(){
+    const host = $('ot-core-form');
+    if(!host) return;
+
+    host.innerHTML = [
+      section('Sensory Processing', OTCORE['Sensory'], 'Sensory'),
+      section('Motor — Fine', OTCORE['Motor – Fine'], 'Motor_Fine'),
+      section('Motor — Gross', OTCORE['Motor – Gross'], 'Motor_Gross'),
+      section('ADL / Participation', OTCORE['ADL/Participation'], 'ADL'),
+      section('Adaptive Behavior', OTCORE['Adaptive Behavior'], 'Adaptive')
+    ].join('');
+
+    // Controls + Results
+    const controls = el(`<div class="mt-8">
+      <button class="btn primary" id="ot-core-compute">Compute & Save</button>
+    </div>`);
+    host.appendChild(controls);
+
+    const res = el(`<div id="ot-core-results" class="mt-12"></div>`);
+    host.appendChild(res);
+
+    $('ot-core-compute').addEventListener('click', computeAndSave);
+  }
+
+  // Compute indices (0–100) and severity labels
+  function computeAndSave(){
+    const selects = Array.from(document.querySelectorAll('.otcore-rate'));
+    const noteMap = Array.from(document.querySelectorAll('.otcore-notes'))
+      .reduce((acc,el)=>{ acc[el.dataset.for]=el.value.trim(); return acc; },{});
+
+    const groups = {};
+    const agg = {}; // { group: {sum, n} }
+
+    selects.forEach(sel=>{
+      const g = sel.dataset.group;
+      const sub = sel.dataset.sub;
+      const v = sel.value === "" ? null : Number(sel.value);
+      groups[g] = groups[g] || {};
+      groups[g][sub] = { raw: v, notes: noteMap[sel.id] || "" };
+      if(v!=null){
+        agg[g] = agg[g] || { sum:0, n:0 };
+        agg[g].sum += v;
+        agg[g].n += 1;
+      }
+    });
+
+    const results = {};
+    Object.keys(groups).forEach(g=>{
+      const n = agg[g]?.n || 0;
+      const sum = agg[g]?.sum || 0;
+      const avg = n ? (sum / n) : null;           // 0–4
+      const index = avg!=null ? Math.round(avg * 25) : null; // 0–100
+      results[g] = {
+        subdomains: groups[g],
+        average: avg,
+        index,
+        severity: classify(index)
+      };
+    });
+
+    // Save into case document
+    const ota = ensureOTA();
+    ota.otCore = results;
+
+    paintResults(results);
+
+    if(typeof toast === 'function') toast('OT Core scores computed & saved.');
+    else console.log('[OTCore] saved', results);
+  }
+
+  function classify(index){
+    if(index==null) return "";
+    if(index >= 75) return "Typical";
+    if(index >= 60) return "Mild Difficulty";
+    if(index >= 40) return "Moderate Difficulty";
+    return "Severe Difficulty";
+  }
+
+  function paintResults(results){
+    const host = $('ot-core-results');
+    if(!host) return;
+    const cards = Object.entries(results).map(([g,v])=>{
+      const subs = Object.entries(v.subdomains).map(([sub,info])=>{
+        const val = (info.raw==null) ? "--" : info.raw;
+        return `<li>${escapeHTML(sub)}: ${val}${info.notes? " — "+escapeHTML(info.notes):""}</li>`;
+      }).join('');
+      const badge = v.index!=null ? `${v.index} (${v.severity})` : "—";
+      return `<div class="card p-8 mb-8">
+        <div><b>${escapeHTML(g.replace(/_/g,' '))}</b> — Index: ${badge}</div>
+        <ul>${subs}</ul>
+      </div>`;
+    }).join('');
+    host.innerHTML = cards || "<p class='muted'>No ratings yet.</p>";
+  }
+  // Collect results without painting/saving (for AI payload)
+  window.__OTCore_collect = function(){
+    const selects = Array.from(document.querySelectorAll('.otcore-rate'));
+    const noteMap = Array.from(document.querySelectorAll('.otcore-notes'))
+      .reduce((acc,el)=>{ acc[el.dataset.for]=el.value.trim(); return acc; },{});
+
+    const groups = {};
+    const agg = {};
+    selects.forEach(sel=>{
+      const g = sel.dataset.group;
+      const sub = sel.dataset.sub;
+      const v = sel.value === "" ? null : Number(sel.value);
+      groups[g] = groups[g] || {};
+      groups[g][sub] = { raw: v, notes: noteMap[sel.id] || "" };
+      if(v!=null){
+        agg[g] = agg[g] || { sum:0, n:0 };
+        agg[g].sum += v;
+        agg[g].n += 1;
+      }
+    });
+
+    const results = {};
+    Object.keys(groups).forEach(g=>{
+      const n = agg[g]?.n || 0;
+      const sum = agg[g]?.sum || 0;
+      const avg = n ? (sum / n) : null;                 // 0–4
+      const index = avg!=null ? Math.round(avg * 25) : null;  // 0–100
+      results[g] = {
+        subdomains: groups[g],
+        average: avg,
+        index,
+        severity: (function(i){
+          if(i==null) return "";
+          if(i >= 75) return "Typical";
+          if(i >= 60) return "Mild Difficulty";
+          if(i >= 40) return "Moderate Difficulty";
+          return "Severe Difficulty";
+        })(index)
+      };
+    });
+
+    return results;
+  };
+
+  // public init
+  window.__OTCore_init = function(){
+    if(document.getElementById('ot-core-form')){
+      renderOTCoreForm();
+    }
+  };
+
+})();
+/* ======================= OT Narrative (independent) ======================= */
+
+// Helper getters
+function _textVal(id){ const el = document.getElementById(id); return el ? el.value.trim() : ""; }
+function _checkedVals(name){
+  return Array.from(document.querySelectorAll(`input[name="${name}"]:checked`)).map(el => el.value);
+}
+function _radioVal(name){
+  const el = document.querySelector(`input[name="${name}"]:checked`);
+  return el ? el.value : "";
+}
+
+// Build a self-contained OT payload (no ADIR required)
+function buildOTNarrativeData(){
+  // Try include demographics if available (safe fallback to null)
+  const maybeClient =
+    (window.generatedReportData && (window.generatedReportData.client || window.generatedReportData.clientInfo))
+    || null;
+    // Fallback demographics from the visible form (so OT reports can stand alone)
+const fn = _textVal("firstName");
+const mn = _textVal("middleName");
+const ln = _textVal("lastName");
+const fullNameFallback = [fn, mn, ln].filter(Boolean).join(" ").trim();
+const dobFallback  = _textVal("dobGregorian");
+const ageFallback  = _textVal("age");
+const genderRaw    = document.getElementById("gender")?.value || "";
+const genderFallback = (genderRaw === "other" ? _textVal("genderOtherField") : genderRaw);
+
+// Try to pull intake snapshot (for independent OT)
+let intakeSnap = null;
+try {
+  const caseDoc = (typeof getCurrentCaseDoc === 'function') ? getCurrentCaseDoc() : null;
+  intakeSnap = caseDoc?.otAssessment?.fromIntakeSnapshot || caseDoc?.intake?.client || null;
+} catch(_e){}
+
+// Normalize to ADIR-like clientInfo so rendering & AI can reuse it
+const clientInfo = {
+  fullName: intakeSnap?.name || maybeClient?.fullName || fullNameFallback || "",
+  dob: intakeSnap?.dob || maybeClient?.dob || dobFallback || "",
+  age: (intakeSnap?.ageYears ?? maybeClient?.age) ?? ageFallback ?? "",
+  gender: intakeSnap?.sex || maybeClient?.gender || genderFallback || "",
+  languages: Array.isArray(intakeSnap?.languages) ? intakeSnap.languages
+           : (Array.isArray(maybeClient?.languages) ? maybeClient.languages : (maybeClient?.languages || "")),
+  educationPlacement: intakeSnap?.educationPlacement || "",
+  diagnoses: Array.isArray(intakeSnap?.diagnoses) ? intakeSnap.diagnoses
+           : (maybeClient?.diagnoses || ""),
+  reportDate: new Date().toLocaleDateString()
+};
+// ---- ADIR Background/History collector (for independent OT reports)
+function textOrNull(x){ return (typeof x === 'string' && x.trim()) ? x.trim() : null; }
+
+// If the last payload in memory is ADIR, we can use it directly
+const adirPayload =
+  (window.generatedReportData &&
+   window.generatedReportData.meta &&
+   String(window.generatedReportData.meta.reportType).toUpperCase() === 'ADIR')
+    ? window.generatedReportData
+    : null;
+
+let adirBg = null;
+try {
+  const caseDoc = (typeof getCurrentCaseDoc === 'function') ? getCurrentCaseDoc() : null;
+  const intake  = caseDoc?.intake || {};    // intake object if available
+
+  adirBg = {
+    demographicSummary:
+      textOrNull(adirPayload?.demographicSummary) ||
+      textOrNull(intake?.background?.demographicSummary) ||
+      null,
+
+    backgroundBirth:
+      textOrNull(adirPayload?.backgroundAndBirthHistory) ||
+      textOrNull(intake?.background?.birthHistory) ||
+      null,
+
+    medicalDevelopmental:
+      textOrNull(adirPayload?.medicalAndDevelopmentalHistory) ||
+      textOrNull(intake?.medical?.narrative) ||
+      null,
+
+    developmentalBehavioral:
+      textOrNull(adirPayload?.developmentalAndBehavioralHistory) ||
+      textOrNull(intake?.developmental?.narrative) ||
+      null,
+
+    education:
+      textOrNull(adirPayload?.educationHistory) ||
+      textOrNull(intake?.education?.narrative) ||
+      null,
+
+    family:
+      textOrNull(adirPayload?.familyHistory) ||
+      textOrNull(intake?.background?.familyHistory) ||
+      null,
+
+    living:
+      textOrNull(adirPayload?.livingSituation) ||
+      textOrNull(intake?.background?.livingSituation) ||
+      null,
+
+    primaryConcerns:
+      textOrNull(adirPayload?.primaryConcerns) ||
+      (Array.isArray(intake?.concerns?.primary) ? intake.concerns.primary.join(', ') :
+       textOrNull(intake?.concerns?.narrative)) ||
+      null
+  };
+
+  // If everything is null/empty, drop the object
+  if (Object.values(adirBg).every(v => !v)) adirBg = null;
+} catch(_e) {
+  adirBg = null;
+}
+// ---- Fallback: build minimal ADIR background directly from the form
+if (!adirBg) {
+  const plang     = _textVal('primaryLanguage');
+  const secLangs  = _textVal('secondaryLanguages');
+  const exposure  = _textVal('languageExposure');
+  const marital   = document.getElementById('parentMaritalStatus')?.value || '';
+  const guardian1 = _textVal('household1');               // primary guardian name
+  const concerns  = _textVal('primaryConcerns');
+  const outcomes  = _textVal('desiredOutcomes');
+  const weekday   = _textVal('weekdaySchedule');
+  const weekend   = _textVal('weekendSchedule');
+
+  // Build short paragraphs only if we have something to say
+  const demoParts = [];
+  if (plang)    demoParts.push(`Primary language: ${plang}`);
+  if (secLangs) demoParts.push(`Secondary languages: ${secLangs}`);
+  if (exposure) demoParts.push(`Exposure to secondary languages: ${exposure}%`);
+  if (marital)  demoParts.push(`Parents' marital status: ${marital}`);
+
+  const bgParts = [];
+  if (guardian1) bgParts.push(`Primary household guardian: ${guardian1}`);
+  if (concerns)  bgParts.push(`Primary concerns: ${concerns}`);
+  if (outcomes)  bgParts.push(`Desired outcomes: ${outcomes}`);
+  if (weekday || weekend) {
+    bgParts.push(
+      `Routines${weekday ? ` — weekday: ${weekday}` : ''}${weekend ? `; weekend: ${weekend}` : ''}`
+    );
+  }
+
+  adirBg = {
+    demographicSummary: demoParts.length ? demoParts.join('. ') + '.' : null,
+    backgroundBirth: null,
+    medicalDevelopmental: null,
+    developmentalBehavioral: null,
+    education: null,
+    family: null,
+    living: null,
+    primaryConcerns: (concerns || outcomes) ? (concerns || outcomes) : null
+  };
+
+  // Enrich the Background & Referral Context paragraph if we assembled pieces
+  const merged = bgParts.length ? bgParts.join('. ') + '.' : null;
+  if (merged) adirBg.backgroundBirth = merged;  // we’ll fold this into Background & Referral Context in the prompt
+}
+
+
+  // Unified OT Core indices
+  const otCore = (window.__OTCore_collect ? window.__OTCore_collect() : null);
+
+  // Caregiver interview / environments
+  const envs = _checkedVals("ot_env[]");
+  const supports = _checkedVals("ot_supports[]");
+  const goalDomains = _checkedVals("ot_goals[]");
+
+  // Expanded sections (from CAAT-OT Expanded)
+  const expanded = (window.__OTX_collect ? window.__OTX_collect() : null);
+
+  // Clinical observations radios
+  const obs = {
+    attention:  (document.querySelector('input[name="ot_obs_attention"]:checked')?.value || ""),
+    transitions:(document.querySelector('input[name="ot_obs_transitions"]:checked')?.value || ""),
+    imitation:  (document.querySelector('input[name="ot_obs_imitation"]:checked')?.value || ""),
+    bilateral:  (document.querySelector('input[name="ot_obs_bilateral"]:checked')?.value || ""),
+    oneStep:    (document.querySelector('input[name="ot_obs_1step"]:checked')?.value || ""),
+    twoStep:    (document.querySelector('input[name="ot_obs_2step"]:checked')?.value || ""),
+    notes: _textVal("ot_obs_notes")
+  };
+
+  // Plan
+  const plan = {
+    frequencyPerWeek: _textVal("ot_freq_per_week"),
+    minutesPerSession: _textVal("ot_minutes_per_session"),
+    setting: _textVal("ot_setting"),
+    supportsSelected: supports,
+    supportsNotes: _textVal("ot_supports_notes")
+  };
+
+  // Summary / strengths / barriers
+  const summary = _textVal("ot_summary");
+  const strengths = _textVal("ot_strengths").split("\n").map(s=>s.trim()).filter(Boolean);
+  const barriers  = _textVal("ot_barriers").split("\n").map(s=>s.trim()).filter(Boolean);
+
+  // Final payload (independent OT)
+  const payload = {
+    meta: { reportType: "OT", module: "CAAT-OT v1" },
+    client: maybeClient,
+    clientInfo,                        // ← NEW (normalized demographics)
+    fromIntakeSnapshot: intakeSnap,    // ← NEW (raw intake snapshot if present)
+      adirBackground: adirBg,   // <— add this line
+
+    caregiverInterview: {
+      primaryConcerns: _textVal("ot_primaryConcerns"),
+      environments: envs,
+      caregiverNotes: _textVal("ot_caregiverNotes")
+    },
+    profile:     expanded?.profile     || null,   // routines
+    feeding:     expanded?.feeding     || null,   // feeding/oral
+    executive:   expanded?.executive   || null,   // exec/self-reg
+    handwriting: expanded?.handwriting || null,   // handwriting/school
+    safety:      expanded?.safety      || null,   // risk/safety
+    copm:        expanded?.copm        || [],     // COPM priorities
+    gas:         expanded?.gas         || [],     // GAS goals
+    otCore,                                        // unified indices (Sensory, Motor Fine/Gross, ADL, Adaptive)
+    clinicalObservations: obs,
+    strengths,
+    barriers,
+    goalsRequested: goalDomains,
+    plan,
+    summary
+  };
+
+  return payload;
+}
+
+
+// Call your existing AI generator but with OT-only data
+async function generateOTNarrativeDirect(){
+  // Put OT payload where your generator already reads from
+  window.generatedReportData = buildOTNarrativeData();
+
+  // Reuse your existing function (same pipeline, OT-specific payload)
+  // If your generator supports a template key, you can pass it here; otherwise it will
+  // infer from payload.meta.reportType === 'OT'.
+  await generateAIReportDirect();
+
+  // If you have a hideLoading() call, add it here
+  if (typeof hideLoading === "function") hideLoading();
+}
+/* ======================= CAAT-OT Expanded (COPM + GAS + collectors) ======================= */
+(function(){
+
+  // Helpers (reuse your existing ones if present)
+  function $(id){ return document.getElementById(id); }
+  function _textVal(id){ const el = document.getElementById(id); return el ? el.value.trim() : ""; }
+  function _checkedVals(name){ return Array.from(document.querySelectorAll(`input[name="${name}"]:checked`)).map(el => el.value); }
+
+  // ---------- COPM table ----------
+  function copmRowTemplate(data){
+    const d = data || { problem:"", importance:"", performance:"", satisfaction:"", notes:"" };
+    return `
+      <tr>
+        <td><input class="ot_copm_problem" placeholder="e.g., Dressing independently" value="${escapeHTML(d.problem||"")}"></td>
+        <td><input class="ot_copm_imp" type="number" min="1" max="10" value="${escapeHTML(d.importance||"")}"></td>
+        <td><input class="ot_copm_perf" type="number" min="1" max="10" value="${escapeHTML(d.performance||"")}"></td>
+        <td><input class="ot_copm_sat"  type="number" min="1" max="10" value="${escapeHTML(d.satisfaction||"")}"></td>
+        <td><input class="ot_copm_notes" value="${escapeHTML(d.notes||"")}"></td>
+        <td><button type="button" class="btn danger ot_copm_del">X</button></td>
+      </tr>`;
+  }
+
+  function addCopmRow(data){
+    const body = document.querySelector('#ot_copm_table tbody');
+    if(!body) return;
+    body.insertAdjacentHTML('beforeend', copmRowTemplate(data));
+  }
+
+  function collectCOPM(){
+    const rows = Array.from(document.querySelectorAll('#ot_copm_table tbody tr'));
+    return rows.map(tr => ({
+      problem: tr.querySelector('.ot_copm_problem')?.value.trim() || "",
+      importance: numOrNull(tr.querySelector('.ot_copm_imp')?.value),
+      performance: numOrNull(tr.querySelector('.ot_copm_perf')?.value),
+      satisfaction: numOrNull(tr.querySelector('.ot_copm_sat')?.value),
+      notes: tr.querySelector('.ot_copm_notes')?.value.trim() || ""
+    })).filter(r => r.problem || r.notes);
+  }
+
+  // ---------- GAS table ----------
+  function gasRowTemplate(data){
+    const d = data || { area:"", statement:"", m2:"", m1:"", p0:"", p1:"", p2:"", weeks:"" };
+    return `
+      <tr>
+        <td><input class="ot_gas_area" placeholder="e.g., ADL — Dressing" value="${escapeHTML(d.area||"")}"></td>
+        <td><input class="ot_gas_stmt" placeholder="Goal statement" value="${escapeHTML(d.statement||"")}"></td>
+        <td><input class="ot_gas_m2" placeholder="-2 (baseline)" value="${escapeHTML(d.m2||"")}"></td>
+        <td><input class="ot_gas_m1" placeholder="-1" value="${escapeHTML(d.m1||"")}"></td>
+        <td><input class="ot_gas_p0" placeholder="0 (expected)" value="${escapeHTML(d.p0||"")}"></td>
+        <td><input class="ot_gas_p1" placeholder="+1" value="${escapeHTML(d.p1||"")}"></td>
+        <td><input class="ot_gas_p2" placeholder="+2" value="${escapeHTML(d.p2||"")}"></td>
+        <td><input class="ot_gas_weeks" type="number" min="0" placeholder="weeks" value="${escapeHTML(d.weeks||"")}"></td>
+        <td><button type="button" class="btn danger ot_gas_del">X</button></td>
+      </tr>`;
+  }
+
+  function addGasRow(data){
+    const body = document.querySelector('#ot_gas_table tbody');
+    if(!body) return;
+    body.insertAdjacentHTML('beforeend', gasRowTemplate(data));
+  }
+
+  function collectGAS(){
+    const rows = Array.from(document.querySelectorAll('#ot_gas_table tbody tr'));
+    return rows.map(tr => ({
+      area: tr.querySelector('.ot_gas_area')?.value.trim() || "",
+      statement: tr.querySelector('.ot_gas_stmt')?.value.trim() || "",
+      levels: {
+        "-2": tr.querySelector('.ot_gas_m2')?.value.trim() || "",
+        "-1": tr.querySelector('.ot_gas_m1')?.value.trim() || "",
+        "0":  tr.querySelector('.ot_gas_p0')?.value.trim() || "",
+        "+1": tr.querySelector('.ot_gas_p1')?.value.trim() || "",
+        "+2": tr.querySelector('.ot_gas_p2')?.value.trim() || ""
+      },
+      timeframeWeeks: numOrNull(tr.querySelector('.ot_gas_weeks')?.value)
+    })).filter(r => r.area || r.statement);
+  }
+
+  // ---------- Executive, Handwriting, Routines, Feeding, Safety ----------
+  function collectExecutive(){
+    return {
+      attention:      valSel('ot_exec_attention'),      attentionNotes: _textVal('ot_exec_attention_notes'),
+      initiation:     valSel('ot_exec_initiation'),     initiationNotes: _textVal('ot_exec_initiation_notes'),
+      sustained:      valSel('ot_exec_sustained'),      sustainedNotes: _textVal('ot_exec_sustained_notes'),
+      flexibility:    valSel('ot_exec_flex'),           flexibilityNotes: _textVal('ot_exec_flex_notes'),
+      workingMemory:  valSel('ot_exec_workmem'),        workingMemoryNotes: _textVal('ot_exec_workmem_notes'),
+      planningOrg:    valSel('ot_exec_planorg'),        planningOrgNotes: _textVal('ot_exec_planorg_notes'),
+      emotionalReg:   valSel('ot_exec_emoreg'),         emotionalRegNotes: _textVal('ot_exec_emoreg_notes'),
+      sensoryReg:     valSel('ot_exec_sensreg'),        sensoryRegNotes: _textVal('ot_exec_sensreg_notes')
+    };
+  }
+
+  function collectHandwriting(){
+    return {
+      letter:    valSel('ot_hw_letter'),
+      spacing:   valSel('ot_hw_spacing'),
+      speed:     valSel('ot_hw_speed'),
+      copy:      valSel('ot_hw_copy'),
+      keyboard:  valSel('ot_hw_keyboard'),
+      accomm:    _textVal('ot_hw_accomm'),
+      schoolNotes: _textVal('ot_school_notes')
+    };
+  }
+
+  function collectRoutines(){
+    return {
+      morning:   _textVal('ot_routine_morning'),
+      school:    _textVal('ot_routine_school'),
+      after:     _textVal('ot_routine_after'),
+      bedtime:   _textVal('ot_routine_bedtime'),
+      challenges: _textVal('ot_routine_challenges').split('\n').map(s=>s.trim()).filter(Boolean)
+    };
+  }
+
+  function collectFeeding(){
+    return {
+      appetite: valSel('ot_feed_appetite'),
+      texture:  valSel('ot_feed_texture'),
+      chewing:  valSel('ot_feed_chew'),
+      flags: {
+        picky:      $('#ot_feed_picky')?.checked || false,
+        gagging:    $('#ot_feed_gag')?.checked || false,
+        choking:    $('#ot_feed_choke')?.checked || false,
+        oralSeeking:$('#ot_feed_oralseek')?.checked || false,
+        arfid:      $('#ot_feed_arfid')?.checked || false
+      },
+      notes: _textVal('ot_feed_notes')
+    };
+  }
+
+  function collectSafety(){
+    return {
+      risks: _checkedVals('ot_risk[]'),
+      notes: _textVal('ot_risk_notes')
+    };
+  }
+
+  // ---------- init / events ----------
+  function initCOPM(){
+    const addBtn = $('#ot_copm_add');
+    const table = $('#ot_copm_table');
+    if(!addBtn || !table) return;
+    addBtn.addEventListener('click', ()=> addCopmRow());
+    table.addEventListener('click', (e)=>{
+      if(e.target && e.target.classList.contains('ot_copm_del')){
+        e.target.closest('tr')?.remove();
+      }
+    });
+    // seed one empty row
+    if(!table.querySelector('tbody tr')) addCopmRow();
+  }
+
+  function initGAS(){
+    const addBtn = $('#ot_gas_add');
+    const table = $('#ot_gas_table');
+    if(!addBtn || !table) return;
+    addBtn.addEventListener('click', ()=> addGasRow());
+    table.addEventListener('click', (e)=>{
+      if(e.target && e.target.classList.contains('ot_gas_del')){
+        e.target.closest('tr')?.remove();
+      }
+    });
+    // seed one empty row
+    if(!table.querySelector('tbody tr')) addGasRow();
+  }
+
+  function valSel(id){
+    const el = document.getElementById(id);
+    if(!el) return "";
+    const v = (el.value ?? "").toString().trim();
+    return v;
+  }
+
+  function numOrNull(v){
+    if(v===undefined || v===null) return null;
+    const s = (""+v).trim();
+    if(s==="") return null;
+    const n = Number(s);
+    return Number.isFinite(n) ? n : null;
+  }
+
+  function escapeHTML(s){ return (s??"").toString().replace(/[&<>"']/g,m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m])); }
+
+  // expose init + collector
+  window.__OTX_init = function(){
+    initCOPM();
+    initGAS();
+  };
+
+  window.__OTX_collect = function(){
+    return {
+      profile:     collectRoutines(),
+      feeding:     collectFeeding(),
+      executive:   collectExecutive(),
+      handwriting: collectHandwriting(),
+      safety:      collectSafety(),
+      copm:        collectCOPM(),
+      gas:         collectGAS()
+    };
+  };
+
+})();
+
+
+
+

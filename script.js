@@ -1724,39 +1724,36 @@ csectionReasonLabel: "سبب العملية القيصرية"
   }
 };
 function switchLanguage(lang) {
-  currentLanguage = lang;
-  document.body.dir = lang === "ar" ? "rtl" : "ltr";
-  document.body.classList.toggle("rtl", lang === "ar");
+  // clamp to a supported dictionary
+  currentLanguage = translations[lang] ? lang : "en";
+  const t = translations[currentLanguage];
 
-  
+  // direction only for Arabic
+  document.body.dir = currentLanguage === "ar" ? "rtl" : "ltr";
+  document.body.classList.toggle("rtl", currentLanguage === "ar");
 
+  // buttons
   const signBtn = document.querySelector('button[onclick="generateFullIntakeReport()"]');
-if (signBtn) signBtn.textContent = translations[lang].signSubmit;
+  if (signBtn) signBtn.textContent = t.signSubmit;
 
-const aiBtn = document.querySelector('button[onclick="generateNarrativeReport()"]');
-if (aiBtn) aiBtn.textContent = translations[lang].generateAI;
+  const aiBtn = document.querySelector('button[onclick="generateNarrativeReport()"]');
+  if (aiBtn) aiBtn.textContent = t.generateAI;
 
-const langLabel = document.querySelector('label[for="languageSelect"]');
-if (langLabel) langLabel.textContent = translations[lang].selectLanguage;
+  const langLabel = document.querySelector('label[for="languageSelect"]');
+  if (langLabel) langLabel.textContent = t.selectLanguage;
 
-  // ✅ Add this at the end
-  // ✅ Translate form labels
-// ✅ Translate form labels
- document.querySelectorAll("[data-translate]").forEach((el) => {
-  const key = el.getAttribute("data-translate");
-  console.log("Translating:", key, "→", translations[currentLanguage][key]); // 👈 add this
-  if (translations[currentLanguage][key]) {
-    el.textContent = translations[currentLanguage][key];
-  }
-});
+  // labels with data-translate
+  document.querySelectorAll("[data-translate]").forEach((el) => {
+    const key = el.getAttribute("data-translate");
+    if (t[key]) el.textContent = t[key];
+  });
 
-
-  // ✅ Translate <option> elements
+  // option elements
   document.querySelectorAll("option[data-translate-option]").forEach((opt) => {
     const key = opt.getAttribute("data-translate-option");
-    if (translations[currentLanguage][key]) {
-      opt.textContent = translations[currentLanguage][key];
-      opt.label = translations[currentLanguage][key];
+    if (t[key]) {
+      opt.textContent = t[key];
+      opt.label = t[key];
     }
   });
 }
@@ -1777,7 +1774,7 @@ function generateFullIntakeReport() {
 
   const get = (id) => document.getElementById(id)?.value.trim() || "";
   const today = new Date().toLocaleDateString();
-
+const t = translations[currentLanguage] || translations.en;
   const childFullName = `${get("firstName")} ${get("middleName")} ${get("lastName")}`.trim();
   const preferredName = get("preferredName");
   const dob = get("dobGregorian");
@@ -2003,7 +2000,7 @@ const programGradeLevel = get("programGradeLevel");
 const attendanceFrequency = get("attendanceFrequency");
 const specialServicesAccom = get("specialServicesAccom");
 const specialServicesType = get("specialServicesType");
-const handPreference = get("handPreference");
+const handPreference = get("handPreference") || get("handPreferenceAlt");
 const gradesRepeated = get("gradesRepeated");
 const learningChallenges = get("learningChallenges");
 const learningChallengesExplain = get("learningChallengesExplain");
@@ -2461,20 +2458,20 @@ window.generatedReportData = reportData;
 
  doc += `
   <div class="section">
-    <h2>${translations[currentLanguage].demographicSummary}</h2>
+    <h2>${t.demographicSummary}</h2>
     <ul>
-      <li><strong>${translations[currentLanguage].fullNameLabel}:</strong> ${childFullName}</li>
-  <li><strong>${translations[currentLanguage].preferredNameLabel}:</strong> ${preferredName || "N/A"}</li>
-  <li><strong>${translations[currentLanguage].ageLabel}:</strong> ${age}</li>
-  <li><strong>${translations[currentLanguage].genderLabel}:</strong> ${gender}</li>
-  <li><strong>${translations[currentLanguage].dobLabel}:</strong> ${dob || "unspecified"}</li>
-  <li><strong>${translations[currentLanguage].primaryLangLabel}:</strong> ${primaryLanguage}${languageOther ? ` (${languageOther})` : ""}</li>
-  <li><strong>${translations[currentLanguage].secondaryLangLabel}:</strong> ${secondaryLanguages || "None reported"}</li>
-  <li><strong>${translations[currentLanguage].maritalStatusLabel}:</strong> ${parentMaritalStatus}${maritalOther ? ` (${maritalOther})` : ""}</li>
-  <li><strong>${translations[currentLanguage].extendedFamilyLabel}:</strong> ${extendedFamilyInvolvement || "Not reported"}</li>
-  <li><strong>${translations[currentLanguage].household1Label}:</strong> ${household1Name || "Not specified"}</li>
-  <li><strong>${translations[currentLanguage].residence1Label}:</strong> ${residence1 || "Not specified"}%</li>
-  <li><strong>${translations[currentLanguage].household1MembersLabel}:</strong><br/>
+      <li><strong>${t.fullNameLabel}:</strong> ${childFullName}</li>
+  <li><strong>${t.preferredNameLabel}:</strong> ${preferredName || "N/A"}</li>
+  <li><strong>${t.ageLabel}:</strong> ${age}</li>
+  <li><strong>${t.genderLabel}:</strong> ${gender}</li>
+  <li><strong>${t.dobLabel}:</strong> ${dob || "unspecified"}</li>
+  <li><strong>${t.primaryLangLabel}:</strong> ${primaryLanguage}${languageOther ? ` (${languageOther})` : ""}</li>
+  <li><strong>${t.secondaryLangLabel}:</strong> ${secondaryLanguages || "None reported"}</li>
+  <li><strong>${t.maritalStatusLabel}:</strong> ${parentMaritalStatus}${maritalOther ? ` (${maritalOther})` : ""}</li>
+  <li><strong>${t.extendedFamilyLabel}:</strong> ${extendedFamilyInvolvement || "Not reported"}</li>
+  <li><strong>${t.household1Label}:</strong> ${household1Name || "Not specified"}</li>
+  <li><strong>${t.residence1Label}:</strong> ${residence1 || "Not specified"}%</li>
+  <li><strong>${t.household1MembersLabel}:</strong><br/>
     ${
       household1Names.length
         ? household1Names.map((n, i) =>
@@ -2486,9 +2483,9 @@ window.generatedReportData = reportData;
   ${
     parentMaritalStatus !== "married" && household2Name
       ? `
-  <li><strong>${translations[currentLanguage].household2Label}:</strong> ${household2Name}</li>
-  <li><strong>${translations[currentLanguage].residence2Label}:</strong> ${residence2 || "Not specified"}%</li>
-  <li><strong>${translations[currentLanguage].household2MembersLabel}:</strong><br/>
+  <li><strong>${t.household2Label}:</strong> ${household2Name}</li>
+  <li><strong>${t.residence2Label}:</strong> ${residence2 || "Not specified"}%</li>
+  <li><strong>${t.household2MembersLabel}:</strong><br/>
     ${
       household2Names.length
         ? household2Names.map((n, i) =>
@@ -2501,41 +2498,41 @@ window.generatedReportData = reportData;
   }
   ${
     siblingNames.length
-      ? `<li><strong>${translations[currentLanguage].siblingsLabel}:</strong><br/>
+      ? `<li><strong>${t.siblingsLabel}:</strong><br/>
         ${siblingNames.map((n, i) => `- ${n} (age ${siblingAges[i] || "?"})`).join("<br/>")}
       </li>`
       : ""
   }
-  <li><strong>${translations[currentLanguage].primaryConcernsLabel}:</strong> ${primaryConcerns || "Not provided"}</li>
-  <li><strong>${translations[currentLanguage].desiredOutcomesLabel}:</strong> ${desiredOutcomes || "Not specified"}</li>
-  ${additionalNotes ? `<li><strong>${translations[currentLanguage].additionalNotesLabel}:</strong> ${additionalNotes}</li>` : ""}
+  <li><strong>${t.primaryConcernsLabel}:</strong> ${primaryConcerns || "Not provided"}</li>
+  <li><strong>${t.desiredOutcomesLabel}:</strong> ${desiredOutcomes || "Not specified"}</li>
+  ${additionalNotes ? `<li><strong>${t.additionalNotesLabel}:</strong> ${additionalNotes}</li>` : ""}
 `;
 doc += `
   <div class="section">
-    <h2>${translations[currentLanguage].backgroundHistory}</h2>
+    <h2>${t.backgroundHistory}</h2>
     <ul>
-      <li><strong>${translations[currentLanguage].motherAgeLabel}:</strong> ${motherAgeAtBirth || "unspecified"}</li>
-<li><strong>${translations[currentLanguage].fatherAgeLabel}:</strong> ${fatherAgeAtBirth || "unspecified"}</li>
-<li><strong>${translations[currentLanguage].consanguinityLabel}:</strong> ${degreeOfConsanguinity || "not specified"}</li>
-<li><strong>${translations[currentLanguage].motherEduLabel}:</strong> ${motherOccEdu || "not provided"}</li>
-<li><strong>${translations[currentLanguage].fatherEduLabel}:</strong> ${fatherOccEdu || "not provided"}</li>
-<li><strong>${translations[currentLanguage].pregnancyCountLabel}:</strong> ${numMotherPregnancies || "unspecified"}</li>
-<li><strong>${translations[currentLanguage].liveBirthsLabel}:</strong> ${liveBirths || "?"}</li>
-<li><strong>${translations[currentLanguage].stillBirthsLabel}:</strong> ${stillBirths || "0"}</li>
-<li><strong>${translations[currentLanguage].pregnancyPlannedLabel}:</strong> ${pregnancyPlanned || "unspecified"}</li>
-<li><strong>${translations[currentLanguage].fertilityLabel}:</strong> ${fertilityTreatments || "not mentioned"}</li>
-<li><strong>${translations[currentLanguage].medicationsLabel}:</strong> ${tookMedicationsYesNo === "yes" ? (pregMedications.join(", ") || "none listed") + (pregMedOther ? `, and also: ${pregMedOther}` : "") : "None reported"}</li>
-<li><strong>${translations[currentLanguage].multipleBirthLabel}:</strong> ${multipleBirthNew === "yes" ? `${multipleBirthType || "unspecified type"}, ${identicalOrFraternal || "unspecified"}` : "No"}</li>
-<li><strong>${translations[currentLanguage].drugUseLabel}:</strong> ${pregDrugUsed === "yes" ? pregDrugSpec || "unspecified substances" : "No use reported"}</li>
-<li><strong>${translations[currentLanguage].complicationsLabel}:</strong> ${difficultPregYesNo === "yes" ? (pregnancyDifficulties.join(", ") || "unspecified") + `. Notes: ${pregDiffExplain || "none"}` : "None reported"}</li>
-<li><strong>${translations[currentLanguage].pitocinLabel}:</strong> ${pitocinUsedNew || "not reported"}</li>
-<li><strong>${translations[currentLanguage].deliveryLabel}:</strong> ${deliveryMode || "unspecified"}${deliveryMode === "c-section" && csectionReasonNew ? ` (Reason: ${csectionReasonNew})` : ""}</li>
-<li><strong>${translations[currentLanguage].prematureLabel}:</strong> 
+      <li><strong>${t.motherAgeLabel}:</strong> ${motherAgeAtBirth || "unspecified"}</li>
+<li><strong>${t.fatherAgeLabel}:</strong> ${fatherAgeAtBirth || "unspecified"}</li>
+<li><strong>${t.consanguinityLabel}:</strong> ${degreeOfConsanguinity || "not specified"}</li>
+<li><strong>${t.motherEduLabel}:</strong> ${motherOccEdu || "not provided"}</li>
+<li><strong>${t.fatherEduLabel}:</strong> ${fatherOccEdu || "not provided"}</li>
+<li><strong>${t.pregnancyCountLabel}:</strong> ${numMotherPregnancies || "unspecified"}</li>
+<li><strong>${t.liveBirthsLabel}:</strong> ${liveBirths || "?"}</li>
+<li><strong>${t.stillBirthsLabel}:</strong> ${stillBirths || "0"}</li>
+<li><strong>${t.pregnancyPlannedLabel}:</strong> ${pregnancyPlanned || "unspecified"}</li>
+<li><strong>${t.fertilityLabel}:</strong> ${fertilityTreatments || "not mentioned"}</li>
+<li><strong>${t.medicationsLabel}:</strong> ${tookMedicationsYesNo === "yes" ? (pregMedications.join(", ") || "none listed") + (pregMedOther ? `, and also: ${pregMedOther}` : "") : "None reported"}</li>
+<li><strong>${t.multipleBirthLabel}:</strong> ${multipleBirthNew === "yes" ? `${multipleBirthType || "unspecified type"}, ${identicalOrFraternal || "unspecified"}` : "No"}</li>
+<li><strong>${t.drugUseLabel}:</strong> ${pregDrugUsed === "yes" ? pregDrugSpec || "unspecified substances" : "No use reported"}</li>
+<li><strong>${t.complicationsLabel}:</strong> ${difficultPregYesNo === "yes" ? (pregnancyDifficulties.join(", ") || "unspecified") + `. Notes: ${pregDiffExplain || "none"}` : "None reported"}</li>
+<li><strong>${t.pitocinLabel}:</strong> ${pitocinUsedNew || "not reported"}</li>
+<li><strong>${t.deliveryLabel}:</strong> ${deliveryMode || "unspecified"}${deliveryMode === "c-section" && csectionReasonNew ? ` (Reason: ${csectionReasonNew})` : ""}</li>
+<li><strong>${t.prematureLabel}:</strong> 
   ${prematureBirthNew === "yes"
     ? `Yes${prematureWeeksNew ? ` – ${prematureWeeksNew} weeks` : ""}`
     : prematureBirthNew || "Not reported"}
 </li>
-<li><strong>${translations[currentLanguage].laborCompLabel}:</strong> 
+<li><strong>${t.laborCompLabel}:</strong> 
   ${
     laborDeliveryComplications === "yes"
       ? (
@@ -2550,33 +2547,35 @@ doc += `
   }
 </li>
 
-<li><strong>${translations[currentLanguage].neonatalCompLabel}:</strong> ${problemsInHospitalYesNo === "yes" ? hospitalProblems.join(", ") || "not specified" : "None"}</li>
-<li><strong>${translations[currentLanguage].nicuLabel}:</strong> ${nicuAdmitNew === "yes" ? `Yes (${nicuDischargedDays || "duration unspecified"} days), Reason: ${nicuReasonNew || "not specified"}` : "No"}</li>
+<li><strong>${t.neonatalCompLabel}:</strong> ${problemsInHospitalYesNo === "yes" ? hospitalProblems.join(", ") || "not specified" : "None"}</li>
+<li><strong>${t.nicuLabel}:</strong> ${nicuAdmitNew === "yes" ? `Yes (${nicuDischargedDays || "duration unspecified"} days), Reason: ${nicuReasonNew || "not specified"}` : "No"}</li>
     </ul>
 
-    <h3>${translations[currentLanguage].dietaryHeading}</h3>
+    <h3>${t.dietaryHeading}</h3>
 <ul>
-  <li><strong>${translations[currentLanguage].allergiesLabel}:</strong> ${currentAllergies2 === "yes" ? allergiesList2 || "unspecified items" : "No known allergies"}</li>
-  <li><strong>${translations[currentLanguage].specialDietLabel}:</strong> ${specialDiet2 === "yes" ? specialDietChecklist.join(", ") || "none specified" : "Not reported"}</li>
+  <li><strong>${t.allergiesLabel}:</strong> ${currentAllergies2 === "yes" ? allergiesList2 || "unspecified items" : "No known allergies"}</li>
+  <li><strong>${t.specialDietLabel}:</strong> ${specialDiet2 === "yes" ? specialDietChecklist.join(", ") || "none specified" : "Not reported"}</li>
 </ul>
 
 
-    <h3>${translations[currentLanguage].milestonesHeading}</h3>
+    <h3>${t.milestonesHeading}</h3>
 <ul>
-  <li><strong>${translations[currentLanguage].socialMilestonesLabel || "Social Milestones"}:</strong><br/>
+  <li><strong>${t.socialMilestonesLabel || "Social Milestones"}:</strong><br/>
   ${
     Object.entries(devSocial)
       .filter(([_, v]) => v)
-      .map(([k, v]) => `${translations[currentLanguage][k] || k.replace("soc_", "")}: ${v}`)
+      .map(([k, v]) => `${t[k] || k.replace("soc_", "")}: ${v}
+`)
       .join(", ") || "Not reported"
   }
 </li>
 
-  <li><li><strong>${translations[currentLanguage].cognitiveMilestonesLabel || "Cognitive Milestones"}:</strong><br/>
+  <li><li><strong>${t.cognitiveMilestonesLabel || "Cognitive Milestones"}:</strong><br/>
+
   ${
     Object.entries(devCognitive)
       .filter(([_, v]) => v)
-      .map(([k, v]) => `${translations[currentLanguage]["cog_" + k] || k}: ${v}`)
+      .map(([k, v]) => `${t["cog_" + k] || k}: ${v}`)
       .join(", ") || "Not reported"
   }
 </li>
@@ -2585,7 +2584,7 @@ doc += `
   ${
     Object.entries(devLanguage)
       .filter(([_, v]) => v)
-      .map(([k, v]) => `${translations[currentLanguage]["lang_" + k] || k}: ${v}`)
+      .map(([k, v]) => `${t["lang_" + k] || k}: ${v}`)
       .join(", ") || "Not reported"
   }
 </li>
@@ -2594,28 +2593,28 @@ doc += `
   ${
     Object.entries(devPhysical)
       .filter(([_, v]) => v)
-      .map(([k, v]) => `${translations[currentLanguage]["phy_" + k] || k}: ${v}`)
+      .map(([k, v]) => `${t["phy_" + k] || k}: ${v}`)
       .join(", ") || "Not reported"
   }
 </li>
 </ul>
 
 
-    <h3>${translations[currentLanguage].dailyLivingHeading}</h3>
+    <h3>${t.dailyLivingHeading}</h3>
 <ul>
-  <li><strong>${translations[currentLanguage].groomingLabel}:</strong><br/>
+  <li><strong>${t.groomingLabel}:</strong><br/>
   ${
     Object.entries(devGrooming)
       .filter(([_, v]) => v)
-      .map(([k, v]) => `${translations[currentLanguage][k] || k}: ${v}`)
+      .map(([k, v]) => `${t[k] || k}: ${v}`)
       .join(", ") || "Not reported"
   }
 </li>
-<li><strong>${translations[currentLanguage].feedingLabel}:</strong><br/>
+<li><strong>${t.feedingLabel}:</strong><br/>
   ${
     Object.entries(devFeeding)
       .filter(([_, v]) => v)
-      .map(([k, v]) => `${translations[currentLanguage][k] || k}: ${v}`)
+      .map(([k, v]) => `${t[k] || k}: ${v}`)
       .join(", ") || "Not reported"
   }
 </li>
@@ -2623,60 +2622,62 @@ doc += `
   ${
     Object.entries(devDressing)
       .filter(([_, v]) => v)
-      .map(([k, v]) => `${translations[currentLanguage][k] || k}: ${v}`)
+      .map(([k, v]) => `${t[k] || k}: ${v}`)
       .join(", ") || "Not reported"
   }
 </li>
-  <li><strong>${translations[currentLanguage].foodSleepLabel}:</strong> ${foodSleepReq2 || "Not described"}</li>
-  <li><strong>${translations[currentLanguage].regressionLabel}:</strong> ${lossSkill2 === "yes" ? `Yes. Explanation: ${lossSkillExplain2 || "Not provided"}. Age noticed: ${lossSkillAge2 || "Not specified"}` : "No"}</li>
+  <li><strong>${t.foodSleepLabel}:</strong> ${foodSleepReq2 || "Not described"}</li>
+  <li><strong>${t.regressionLabel}:</strong> ${lossSkill2 === "yes" ? `Yes. Explanation: ${lossSkillExplain2 || "Not provided"}. Age noticed: ${lossSkillAge2 || "Not specified"}` : "No"}</li>
 </ul>
 
 
-    <h3>${translations[currentLanguage].sensoryHeading}</h3>
+    <h3><h3>${t.sensoryHeading}</h3>
 <ul>
-  <li><strong>${translations[currentLanguage].affectLabel}:</strong> ${affectTraits.join(", ") || "Not specified"}</li>
-  <li><strong>${translations[currentLanguage].domainSensoryLabel}:</strong>
+  <li><strong>${t.affectLabel}:</strong> ${affectTraits.join(", ") || "Not specified"}</li>
+  <li><strong>${t.domainSensoryLabel}:</strong>
     Vision (${sensVision || "n/a"}), Tactile (${sensTactile || "n/a"}), Hearing (${sensHearing || "n/a"}),
     Taste (${sensTaste || "n/a"}), Body Awareness (${sensBodyAwareness || "n/a"}), Smell (${sensSmell || "n/a"}),
     Vestibular (${sensVestibular || "n/a"}), Interoception (${sensInteroception || "n/a"})
   </li>
-  <li><strong>${translations[currentLanguage].reactionsLabel}:</strong> ${
+  <li><strong>${t.reactionsLabel}:</strong> ${
     sensReacts.length 
-      ? sensReacts.map(item => translations[currentLanguage]["sens" + capitalize(item)] || item).join(", ")
-      : (translations[currentLanguage].none || "None observed")
-  }</li>
+      ? sensReacts.map(item => t["sens" + capitalize(item)] || item).join(", ")
+      : (t.none || "None observed")
+  }
+  </li>
 </ul>
 
 
 
-    <h3>${translations[currentLanguage].educationHeading}</h3>
+    <h3>${t.educationHeading}</h3>
+
 <ul>
-  <li><strong>${translations[currentLanguage].schoolLabel}:</strong> ${currentSchool === "yes" ? `Yes (${schoolName || "unnamed school"})` : "No"}</li>
-  <li><strong>${translations[currentLanguage].gradeLabel}:</strong> ${programGradeLevel || "Not specified"}</li>
-  <li><strong>${translations[currentLanguage].attendanceLabel}:</strong> ${attendanceFrequency || "Unspecified"}</li>
-  <li><strong>${translations[currentLanguage].accommodationsLabel}:</strong> ${specialServicesAccom === "yes" ? specialServicesType || "unspecified" : "None reported"}</li>
-  <li><strong>${translations[currentLanguage].handLabel}:</strong> ${handPreference || "Unspecified"}</li>
-  <li><strong>${translations[currentLanguage].repeatedGradesLabel}:</strong> ${gradesRepeated || "Unspecified"}</li>
-  <li><strong>${translations[currentLanguage].learningLabel}:</strong> ${learningChallenges === "yes" ? learningChallengesExplain || "Not specified" : "None reported"}</li>
-  <li><strong>${translations[currentLanguage].weekdayLabel}:</strong> ${weekdaySchedule || "Not described"}</li>
-  <li><strong>${translations[currentLanguage].weekendLabel}:</strong> ${weekendSchedule || "Not described"}</li>
-  <li><strong>${translations[currentLanguage].hobbiesLabel}:</strong> ${interestsHobbies || "Not specified"}</li>
-  <li><strong>${translations[currentLanguage].strengthsLabel}:</strong> ${patientStrengths || "Not specified"}</li>
+  <li><strong>${t.schoolLabel}:</strong> ${currentSchool === "yes" ? `Yes (${schoolName || "unnamed school"})` : "No"}</li>
+  <li><strong>${t.gradeLabel}:</strong> ${programGradeLevel || "Not specified"}</li>
+  <li><strong>${t.attendanceLabel}:</strong> ${attendanceFrequency || "Unspecified"}</li>
+  <li><strong>${t.accommodationsLabel}:</strong> ${specialServicesAccom === "yes" ? specialServicesType || "unspecified" : "None reported"}</li>
+  <li><strong>${t.handLabel}:</strong> ${handPreference || "Unspecified"}</li>
+  <li><strong>${t.repeatedGradesLabel}:</strong> ${gradesRepeated || "Unspecified"}</li>
+  <li><strong>${t.learningLabel}:</strong> ${learningChallenges === "yes" ? learningChallengesExplain || "Not specified" : "None reported"}</li>
+  <li><strong>${t.weekdayLabel}:</strong> ${weekdaySchedule || "Not described"}</li>
+  <li><strong>${t.weekendLabel}:</strong> ${weekendSchedule || "Not described"}</li>
+  <li><strong>${t.hobbiesLabel}:</strong> ${interestsHobbies || "Not specified"}</li>
+  <li><strong>${t.strengthsLabel}:</strong> ${patientStrengths || "Not specified"}</li>
 </ul>
   </div>
 `;
 doc += `
   <div class="section">
-    <h2>${translations[currentLanguage].behaviorHeading}</h2>
+    <h2>${t.behaviorHeading}</h2>
     <ul>
-      <li><strong>${translations[currentLanguage].problemBehaviorLabel}:</strong>
+      <li><strong>${t.problemBehaviorLabel}:</strong>
         ${problemBehaviors.length
-  ? problemBehaviors.map(b => translations[currentLanguage]["pb" + capitalize(b)] || b).join(", ")
-  : translations[currentLanguage].none || "None reported"}
+  ? problemBehaviors.map(b => t["pb" + capitalize(b)] || b).join(", ")
+  : t.none || "None reported"}
 
       </li>
-      <li><strong>${translations[currentLanguage].behaviorObservationLabel}:</strong> ${behaviorConcerns || "Not specified"}</li>
-      <li><strong>${translations[currentLanguage].socialFunctioningLabel}:</strong> 
+      <li><strong>${t.behaviorObservationLabel}:</strong> ${behaviorConcerns || "Not specified"}</li>
+      <li><strong>${t.socialFunctioningLabel}:</strong>
         ${
           friendsEasily2 === "yes"
             ? "Makes friends easily"
@@ -2688,14 +2689,14 @@ doc += `
             : ""
         }
       </li>
-      <li><strong>${translations[currentLanguage].traumaLabel}:</strong> ${abuseNeglectHistory || "Unspecified"}
+      <li><strong>${t.traumaLabel}:</strong> ${abuseNeglectHistory || "Unspecified"}
         ${abuseNeglectExplain ? `<br/>Details: ${abuseNeglectExplain}` : ""}
       </li>
-      <li><strong>${translations[currentLanguage].stressorsLabel}:</strong> 
+      <li><strong>${t.stressorsLabel}:</strong> 
         ${recentStressors2 === "yes" ? `Yes – ${explainStressors2 || "Not specified"}` : "None reported"}
       </li>
       ${behaviorAdditionalComments
-        ? `<li><strong>${translations[currentLanguage].behaviorNotesLabel}:</strong> ${behaviorAdditionalComments}</li>`
+        ? `<li><strong>${t.behaviorNotesLabel}:</strong> ${behaviorAdditionalComments}</li>`
         : ""}
     </ul>
 
@@ -2798,7 +2799,7 @@ doc += `
 `;
 doc += `
   <div class="section">
-    <h2>${translations[currentLanguage].clinicalObservations}</h2>
+    <h2>${t.clinicalObservations}</h2>
     <ul>
       <li><strong>Grooming & Appearance:</strong> ${obs_general_groomed === "yes" ? "Well-groomed" : obs_general_groomed === "no" ? "Disheveled or inappropriate attire" : "Not observed"}</li>
       <li><strong>Facial Expression:</strong> ${obs_general_facial === "yes" ? "Neutral/appropriate" : "Unusual or atypical"}</li>
@@ -2852,11 +2853,11 @@ doc += `
 
 doc += `
   <div class="section">
-    <h2>${translations[currentLanguage].signatureHeading}</h2>
-    <p><strong>${translations[currentLanguage].caseManagerNameLabel}:</strong> ${caseManager || "Not provided"}</p>
-    <p><strong>${translations[currentLanguage].caseManagerSignatureLabel}:</strong> ${get("caseManagerSignature") || "Not signed"}</p>
-    <p><strong>${translations[currentLanguage].submissionDateLabel}:</strong> ${intakeDate || "Not dated"}</p>
-    <p style="margin-top: 30px;">${translations[currentLanguage].confirmationStatement}</p>
+    <h2>${t.signatureHeading}</h2>
+    <p><strong>${t.caseManagerNameLabel}:</strong> ${caseManager || "Not provided"}</p>
+    <p><strong>${t.caseManagerSignatureLabel}:</strong> ${get("caseManagerSignature") || "Not signed"}</p>
+    <p><strong>${t.submissionDateLabel}:</strong> ${intakeDate || "Not dated"}</p>
+    <p style="margin-top: 30px;">${t.confirmationStatement}</p>
   </div>
 `;
 
@@ -2887,6 +2888,7 @@ const opt = {
 };
 }
 function evaluateDSM5(data) {
+  const t = translations[currentLanguage] || translations.en;
   const name = data.clientInfo.fullName.split(" ")[0].toUpperCase();
 
   const hasAllA = (
@@ -2916,7 +2918,7 @@ function evaluateDSM5(data) {
     : `<p><strong>Recommendation:</strong> Current clinical data does not fully satisfy DSM-5 criteria for ASD. Continued developmental monitoring and follow-up evaluation are recommended as appropriate.</p>`;
 
   return `
-    <h2 style="color: #1a3e80; margin-top: 50px;">${translations[currentLanguage].dsm5Evaluation}</h2>
+    <h2 style="color: #1a3e80; margin-top: 50px;">${t.dsm5Evaluation}</h2>
     <p>This diagnostic section evaluates whether <strong>${name}</strong> meets DSM-5 criteria for Autism Spectrum Disorder based on current intake data.</p>
 
     <h3>Section A: Social Communication Deficits (All Required)</h3>

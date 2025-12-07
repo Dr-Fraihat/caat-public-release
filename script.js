@@ -163,82 +163,123 @@ function clearFormState(uid, alsoClearUI = false) {
 
 document.addEventListener("DOMContentLoaded", () => {
   firebase.auth().onAuthStateChanged((user) => {
-  window.currentUser = user;
+    window.currentUser = user;
 
-  const loginSection = document.getElementById("loginSection");
-  const protectedAppSection = document.getElementById("protectedAppSection");
+    const loginSection = document.getElementById("loginSection");
+    const protectedAppSection = document.getElementById("protectedAppSection");
 
-  if (user) {
-    const allowedAdmins = ["dr.fraihat@gmail.com"]; // ✅ Add admin/test email here
+    if (!user) {
+      // Not logged in
+      if (protectedAppSection) protectedAppSection.style.display = "none";
+      if (loginSection) loginSection.style.display = "block";
+    } else {
+      // ========= NEW MASTER / ADMIN LOGIC =========
+      (async () => {
+        // 1) Start with hard-coded admin email(s)
+        const allowedAdmins = [
+  "dr.fraihat@gmail.com",
+  "group-a@caat.org",
+  "group-b@caat.org",
+  "group-c@caat.org",
+  "group-d@caat.org"
+];
+        let isMaster = allowedAdmins.includes(user.email);
 
-    if (!allowedAdmins.includes(user.email)) {
-      // 🛑 Not admin — redirect to Stripe
-      fetch("https://caat-backend.onrender.com/create-checkout-session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" }
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.url) {
-          window.location.href = data.url;
-        } else {
-          alert("❌ Failed to redirect to payment page.");
+        try {
+          // 2) Read Firestore user doc: /users/{uid}
+          const docRef = firebase.firestore().collection("users").doc(user.uid);
+          const snap = await docRef.get();
+          if (snap.exists) {
+            const data = snap.data() || {};
+
+            // role === "master" in Firestore → treat as master
+            if (data.role === "master") {
+              isMaster = true;
+            }
+
+            // Optional: keep these around for later (limits, stats, etc.)
+            window.userSubscription = data.subscription || null;
+            window.reportsUsed = typeof data.reportsUsed === "number" ? data.reportsUsed : 0;
+          }
+        } catch (err) {
+          console.error("Error reading Firestore user document:", err);
         }
-      })
-      .catch((err) => {
-        console.error("Stripe error:", err);
-        alert("⚠️ Unable to redirect to payment.");
+
+        // 3) Store globally so we can use it in other functions/buttons
+        window.isMaster = isMaster;
+
+        // 4) If NOT master → redirect to Stripe (same as before)
+        if (!isMaster) {
+          if (loginSection) loginSection.style.display = "none";
+          if (protectedAppSection) protectedAppSection.style.display = "none";
+
+          fetch("https://caat-backend.onrender.com/create-checkout-session", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" }
+          })
+            .then((res) => res.json())
+            .then((data) => {
+              if (data.url) {
+                window.location.href = data.url;
+              } else {
+                alert("❌ Failed to redirect to payment page.");
+              }
+            })
+            .catch((err) => {
+              console.error("Stripe error:", err);
+              alert("⚠️ Unable to redirect to payment.");
+            });
+
+          return; // ⛔ stop — no access to app
+        }
+
+        // 5) MASTER / ADMIN ACCESS ALLOWED → show app
+        if (protectedAppSection) protectedAppSection.style.display = "block";
+        if (loginSection) loginSection.style.display = "none";
+
+        // ---- Load saved form for this user
+        loadFormState(user.uid);
+
+        // ---- Start auto-saving on change/input (debounced)
+        const root = document.getElementById("protectedAppSection");
+        if (root) {
+          let __formSaveTimer = null;
+          function __queueSave() {
+            clearTimeout(__formSaveTimer);
+            __formSaveTimer = setTimeout(() => saveFormState(user.uid), 350);
+          }
+          root.addEventListener("input", __queueSave, true);
+          root.addEventListener("change", __queueSave, true);
+        }
+      })();
+    }
+
+    // ======= Logout button (unchanged) =======
+    const logoutBtn = document.getElementById("logoutBtn");
+    if (logoutBtn) {
+      logoutBtn.addEventListener("click", async () => {
+        try {
+          await firebase.auth().signOut();
+          location.reload();
+        } catch (e) {
+          console.error("Logout failed:", e);
+          alert("Logout failed: " + (e?.message || e));
+        }
       });
-
-      return; // ⛔ stop further access
     }
 
-    // ✅ Admin access allowed
-    protectedAppSection.style.display = "block";
-    loginSection.style.display = "none";
-    // ---- Load saved form for this user
-loadFormState(user.uid);
-
-// ---- Start auto-saving on change/input (debounced)
-const root = document.getElementById('protectedAppSection');
-let __formSaveTimer = null;
-function __queueSave() {
-  clearTimeout(__formSaveTimer);
-  __formSaveTimer = setTimeout(() => saveFormState(user.uid), 350);
-}
-root.addEventListener('input', __queueSave, true);
-root.addEventListener('change', __queueSave, true);
-
-  } else {
-    // Not logged in
-    protectedAppSection.style.display = "none";
-    loginSection.style.display = "block";
-  }
-  // Logout button
-const logoutBtn = document.getElementById("logoutBtn");
-if (logoutBtn) {
-  logoutBtn.addEventListener("click", async () => {
-    try {
-      await auth.signOut();     // Firebase Auth sign out
-      location.reload();        // Reset UI to login screen
-    } catch (e) {
-      console.error("Logout failed:", e);
-      alert("Logout failed: " + (e?.message || e));
+    // ======= Reset button (unchanged) =======
+    const resetBtn = document.getElementById("resetFormBtn");
+    if (resetBtn) {
+      resetBtn.addEventListener("click", () => {
+        const ok = confirm("This will clear all locally saved form data on this device. Continue?");
+        if (!ok) return;
+        clearFormState(user?.uid, /* alsoClearUI */ true);
+        alert("All locally saved data cleared.");
+      });
     }
   });
-}
-// Reset button (clears local data + UI)
-const resetBtn = document.getElementById('resetFormBtn');
-if (resetBtn) {
-  resetBtn.addEventListener('click', () => {
-    const ok = confirm("This will clear all locally saved form data on this device. Continue?");
-    if (!ok) return;
-    clearFormState(user?.uid, /* alsoClearUI */ true);
-    alert('All locally saved data cleared.');
-  });
-}
 
-});
 
   const secondaryLangInput = document.getElementById("secondaryLanguages");
   const exposureWrapper = document.getElementById("languageExposureWrapper");
@@ -2570,7 +2611,7 @@ doc += `
   }
 </li>
 
-  <li><li><strong>${t.cognitiveMilestonesLabel || "Cognitive Milestones"}:</strong><br/>
+  <li><strong>${t.cognitiveMilestonesLabel || "Cognitive Milestones"}:</strong><br/>
 
   ${
     Object.entries(devCognitive)
@@ -2580,7 +2621,7 @@ doc += `
   }
 </li>
 
-  <li><strong>${translations[currentLanguage].languageMilestonesLabel || "Language Milestones"}:</strong><br/>
+  <li><strong>${t.languageMilestonesLabel || "Language Milestones"}:</strong><br/>
   ${
     Object.entries(devLanguage)
       .filter(([_, v]) => v)
@@ -2589,7 +2630,7 @@ doc += `
   }
 </li>
 
-  <li><strong>${translations[currentLanguage].physicalMilestonesLabel || "Physical Milestones"}:</strong><br/>
+  <li><strong>${t.physicalMilestonesLabel || "Physical Milestones"}:</strong><br/>
   ${
     Object.entries(devPhysical)
       .filter(([_, v]) => v)
